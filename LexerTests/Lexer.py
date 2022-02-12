@@ -55,6 +55,7 @@ SymbolsTbl=(("[\[\]]","Operator"),          #Column 0
 
 txt2="[Event \"The Rumble in the Jungle\"] 1. c4 g6{comment} 2. g3 Bg7 3. Bg2 c5# 0-1" + " "
 txt2="[Event \"The Rumble in the Jungle 1974\"] 1. c4 g6 { \"hello\" comment 1234} 2. g3 Bg7 3. Bg2 c5# 0-1" + " "
+txt2="""[Event \"The Rumble in the Jungle 1974\"] 1. c4 g6 { "hello" comment 1234} 2. g3 Bg7 3. Bg2 c5# 0-1 """
 
 
 State=0
