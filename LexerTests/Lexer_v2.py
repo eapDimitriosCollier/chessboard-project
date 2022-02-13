@@ -54,7 +54,6 @@ SymbolsTbl=(("[\[\]]","Operator"),          #Column 0
 
 
 txt="""
-
 [Event "GBR-ch 58th"]
 [Site "Blackpool"]
 [Date "1971.08.12"]
@@ -101,27 +100,7 @@ Kh1 Bxb3 21. axb3 b5 22. Be7 Rfe8 23. Bb4 f5 24. Rh4 Bf6 25. Rh3 a5 26. Bd2
 b4 27. e4 fxe4 28. Ng5 Bxg5 29. Bxg5 Rac8 30. Re3 Nd4 31. h4 h6 32. Bxh6
 Nf5 33. Bg5 Nxe3 34. fxe3 Rf8 35. Ra1 Rc3 36. Rxa5 Rxb3 37. Rxe5 Rd3 38.
 Rb5 b3 39. Kg1 Rc8 40. Rb7 Rc2 41. Kh2 b2 42. Bf6 Rdd2 43. Kg3 Rxg2+ 44.
-Kf4 Rcf2+ 45. Ke5 Rg1 46. Rb8+ Kf7 47. Rb7+ Ke8 0-1
-
-[Event "GBR-ch 58th"]
-[Site "Blackpool"]
-[Date "1971.08.13"]
-[Round "5"]
-[White "Whiteley, Andrew"]
-[Black "Hartston, William R"]
-[Result "1/2-1/2"]
-[WhiteElo "2310"]
-[BlackElo "2390"]
-[ECO "A32"]
-[EventDate "1971.08.09"]
-[PlyCount "31"]
-[EventType "swiss"]
-[EventRounds "11"]
-[EventCountry "GBR"]
-
-1. d4 Nf6 2. c4 c5 3. Nf3 cxd4 4. Nxd4 e6 5. Nc3 Bb4 6. Nb5 O-O 7. a3 Bxc3+
-8. Nxc3 d5 9. cxd5 exd5 10. e3 Nc6 11. Be2 Be6 12. O-O Rc8 13. Bd2 d4 14.
-exd4 Nxd4 15. Be3 Nxe2+ 16. Nxe2 1/2-1/2 """
+Kf4 Rcf2+ 45. Ke5 Rg1 46. Rb8+ Kf7 47. Rb7+ Ke8 0-1 """
 
 
 
@@ -137,6 +116,7 @@ for char in txt + " ":
             NewState,tmp =(FSM_Table[State][Col])()
             if NewState<0: 
                  print ("Error in position:",pos)
+                 raise Exception('Unknown Lexeme!')
                  break
             #print (pos)
             if State != NewState and Buffer.strip():
