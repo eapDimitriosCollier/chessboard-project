@@ -1,6 +1,3 @@
-import re
-from unittest.util import three_way_cmp
-
 # <PGN-database> ::= <PGN-game> <PGN-database>
 #                    <empty>
 
@@ -37,9 +34,9 @@ from unittest.util import three_way_cmp
 
 
 class Tree:
-    def __init__(self, nodeName='root', nodes=None, nodeParent=None, nodeInfo=None):
+    def __init__(self, nodeName='root', nodes=None, nodeInfo=None):
         self.nodeName = nodeName
-        self.nodeParent = nodeParent
+        self.nodeParent = None
         self.nodeInfo = nodeInfo
         self.nodes = []
         if nodes != None:
@@ -70,14 +67,15 @@ class Tree:
     def get_parent(self):
         return self.nodeParent
 
-
-class ParseError(Exception):
+class SyntacticalError(Exception):
     def __init__(self, tokenIndex, expected, got):
-        self.message = f'ParseError on token #{tokenIndex}. Expected {expected}, got {got}'
+        self.message = f'SyntacticalError on token #{tokenIndex}. Expected {expected}, got {got}'
         super().__init__(self.message)
 
-class ParseStop(Exception):
-    pass
+class SemanticalError(Exception):
+    def __init__(self, tokenIndex, errorMessage):
+        self.message = f'SemanticalError on token #{tokenIndex}. {errorMessage}'
+        super().__init__(self.message)
 
 class Parser:
     def __init__(self, lexerExpressionList):
@@ -86,18 +84,43 @@ class Parser:
         self.streamLen = len(self.lexerExpressionList)
         self.parseTree = Tree('root')
         self.currentNode = self.parseTree
-        
-        try:
-            self.start()
-        except ParseStop:
-            print('Stop parsing')    
+
+         # Ενα λεξικό από τους identifiers που μπορούν να χρησιμοποιηθούν ως όνομα tag.
+         # Κάθε φορά που θα χρησιμοποιείται ένας identifier, θα διαγράφεται από το λεξικό,
+         # οπότε αν δεν βρεθεί ο identifier στο παρακάτω λεξικό, θα πετάμε ParseError.
+
+         # Αν κατά την λήξη του parsing του TagSection υπάρχουν tag identifiers που δεν είναι optional
+         # στο λεξικό, πετάμε επίσης ParseError
+        self.tagIdentififierStack = {
+            'Event'        : { 'isOptional': False },
+            'Site'         : { 'isOptional': False },
+            'Date'         : { 'isOptional': False },
+            'Round'        : { 'isOptional': False },
+            'White'        : { 'isOptional': False },
+            'Black'        : { 'isOptional': False },
+            'Result'       : { 'isOptional': False },
+            'WhiteTitle'   : { 'isOptional': True },
+            'BlackTitle'   : { 'isOptional': True },
+            'WhiteElo'     : { 'isOptional': True },
+            'BlackElo'     : { 'isOptional': True },
+            'WhiteUSCF'    : { 'isOptional': True },
+            'BlackUSCF'    : { 'isOptional': True },
+            'WhiteNA'      : { 'isOptional': True },
+            'BlackNA'      : { 'isOptional': True },
+            'WhiteType'    : { 'isOptional': True },
+            'BlackType'    : { 'isOptional': True },
+            'EventDate'    : { 'isOptional': True },
+            'EventSponsor' : { 'isOptional': True },
+            'Section'      : { 'isOptional': True },
+            'Stage'        : { 'isOptional': True },
+            'Board'        : { 'isOptional': True },
+        }
+
+        self.start()
         self.parseTree.show_tree()
 
     def nextToken(self):
         self.currentPos += 1
-
-        if (self.currentPos >= self.streamLen):
-            raise ParseStop()
 
         token = self.lexerExpressionList[self.currentPos]
 
@@ -109,15 +132,15 @@ class Parser:
     def prevToken(self):
         self.currentPos -= 1
 
-        if (self.currentPos >= self.streamLen):
-            raise ParseStop()
-
         token = self.lexerExpressionList[self.currentPos]
 
         if (token['token_type'] == 'Comment'):
             self.prevToken()
 
         return token
+
+    def currentToken(self):
+        return self.lexerExpressionList[self.currentPos]
 
     def lookAhead(self):
         token = self.nextToken()
@@ -127,12 +150,12 @@ class Parser:
     def expectType(self,expectedTokenType):
         currentToken = self.nextToken()
         if (currentToken['token_type'] != expectedTokenType):
-            raise ParseError(self.currentPos, expectedTokenType, currentToken['token_type'])            
+            raise SyntacticalError(self.currentPos, expectedTokenType, currentToken['token_type'])            
 
     def expectValue(self,expectedTokenValue):
         currentToken = self.nextToken()
         if (currentToken['token_value'] != expectedTokenValue):
-            raise ParseError(self.currentPos, expectedTokenValue, currentToken['token_value'])      
+            raise SyntacticalError(self.currentPos, expectedTokenValue, currentToken['token_value'])      
 
     def start(self):
         if (not self.PGNDatabase()):
@@ -144,6 +167,7 @@ class Parser:
         if (self.currentNode == None):
             print('Finished Parsing!!')
             return False
+
         self.currentNode.insert_node(Tree('PGNDatabase'))
         self.currentNode = self.currentNode.find_node('PGNDatabase')
         lookAheadToken = self.lookAhead()
@@ -198,17 +222,24 @@ class Parser:
         return True
 
     def TagName(self):
-        self.currentNode.insert_node(Tree('TagName'))
-        self.currentNode = self.currentNode.find_node('TagName')
         self.expectType('Identifier')
-        self.currentNode = self.currentNode.get_parent()  
+        token = self.currentToken()
+        tagIdentifier = token['token_value']
+        self.currentNode.insert_node(Tree('TagName', None, tagIdentifier))
+        self.currentNode = self.currentNode.find_node('TagName')
+        if (tagIdentifier not in self.tagIdentififierStack):
+            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} either does not exist or was already used')
+        else:
+            self.tagIdentififierStack.pop(tagIdentifier)
+        self.currentNode = self.currentNode.get_parent()
         return True
 
     def TagValue(self):
-        self.currentNode.insert_node(Tree('TagValue'))
-        self.currentNode = self.currentNode.find_node('TagValue')
         self.expectType('String')
-        self.currentNode = self.currentNode.get_parent()  
+        token = self.currentToken()
+        self.currentNode.insert_node(Tree('TagValue', None, token))
+        self.currentNode = self.currentNode.find_node('TagValue')
+        self.currentNode = self.currentNode.get_parent()
         return True
     
     def MoveTextSection(self):
@@ -236,7 +267,7 @@ lexerExpressionList = [
             { 'token_type' : 'Identifier',  'token_value' : 'Event' },
             { 'token_type' : 'String',      'token_value' : 'The Rumble in the Jungle 1974' },
             { 'token_type' : 'Operator',    'token_value' : ']' },
-            { 'token_type' : 'WhiteSpace',    'token_value' : '' },
+            { 'token_type' : 'WhiteSpace',  'token_value' : '' },
             { 'token_type' : 'Movement',    'token_value' : '1' },
             { 'token_type' : 'Expression',  'token_value' : 'c4' },
             { 'token_type' : 'Expression',  'token_value' : 'g6' },
@@ -248,7 +279,7 @@ lexerExpressionList = [
             { 'token_type' : 'Expression',  'token_value' : 'Bg2' },
             { 'token_type' : 'Expression',  'token_value' : 'c5#' },
             { 'token_type' : 'Expression',  'token_value' : '0-1' },
-            { 'token_type' : 'WhiteSpace',    'token_value' : '' },
+            { 'token_type' : 'WhiteSpace',   'token_value' : '' },
         ]
 
 Parser(lexerExpressionList)
