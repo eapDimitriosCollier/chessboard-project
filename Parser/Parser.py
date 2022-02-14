@@ -1,39 +1,32 @@
+import ParserConstants
+
+## Η γραμματική του PGN εκφρασμένη σε BNF.
+## Την γραμματική την βρήκαμε στο 
+
 # <PGN-database> ::= <PGN-game> <PGN-database>
 #                    <empty>
-
 # <PGN-game> ::= <tag-section> <movetext-section>
-
 # <tag-section> ::= <tag-pair> <tag-section>
 #                   <empty>
-
 # <tag-pair> ::= [ <tag-name> <tag-value> ]
-
 # <tag-name> ::= <identifier>
-
 # <tag-value> ::= <string>
-
 # <movetext-section> ::= <element-sequence> <game-termination>
-
 # <element-sequence> ::= <element> <element-sequence>
 #                        <recursive-variation> <element-sequence>
 #                        <empty>
-
 # <element> ::= <move-number-indication>
 #               <SAN-move>
 #               <numeric-annotation-glyph>
-
 # <recursive-variation> ::= ( <element-sequence> )
-
 # <game-termination> ::= 1-0
 #                        0-1
 #                        1/2-1/2
 #                        *
 # <empty> ::=
 
-# txt="""[Event \"The Rumble in the Jungle 1974\"] 1. c4 g6 { "hello" comment 1234} 2. g3 Bg7 3. Bg2 c5# 0-1 """
-
-
 class Tree:
+    # Βασική υλοποίηση ενός δέντρου. Χρησιμοποιείται για την παραγωγή του Parser Tree.
     def __init__(self, nodeName='root', nodes=None, nodeInfo=None):
         self.nodeName = nodeName
         self.nodeParent = None
@@ -67,6 +60,7 @@ class Tree:
     def get_parent(self):
         return self.nodeParent
 
+# Κλάσεις για διαχείρηση σφαλμάτων
 class SyntacticalError(Exception):
     def __init__(self, tokenIndex, expected, got):
         self.message = f'SyntacticalError on token #{tokenIndex}. Expected {expected}, got {got}'
@@ -74,51 +68,23 @@ class SyntacticalError(Exception):
 
 class SemanticalError(Exception):
     def __init__(self, tokenIndex, errorMessage):
-        self.message = f'SemanticalError on token #{tokenIndex}. {errorMessage}'
+        self.message = f'SyntacticalError on token #{tokenIndex}. {errorMessage}'
         super().__init__(self.message)
 
 class Parser:
+    """Απλή υλοποίηση ενός Recursive Descent Parser"""
     def __init__(self, lexerExpressionList):
         self.lexerExpressionList = lexerExpressionList
-        self.currentPos = -1
+        self.currentPos = 0
         self.streamLen = len(self.lexerExpressionList)
         self.parseTree = Tree('root')
         self.currentNode = self.parseTree
-
-         # Ενα λεξικό από τους identifiers που μπορούν να χρησιμοποιηθούν ως όνομα tag.
-         # Κάθε φορά που θα χρησιμοποιείται ένας identifier, θα διαγράφεται από το λεξικό,
-         # οπότε αν δεν βρεθεί ο identifier στο παρακάτω λεξικό, θα πετάμε ParseError.
-
-         # Αν κατά την λήξη του parsing του TagSection υπάρχουν tag identifiers που δεν είναι optional
-         # στο λεξικό, πετάμε επίσης ParseError
-        self.tagIdentififierStack = {
-            'Event'        : { 'isOptional': False },
-            'Site'         : { 'isOptional': False },
-            'Date'         : { 'isOptional': False },
-            'Round'        : { 'isOptional': False },
-            'White'        : { 'isOptional': False },
-            'Black'        : { 'isOptional': False },
-            'Result'       : { 'isOptional': False },
-            'WhiteTitle'   : { 'isOptional': True },
-            'BlackTitle'   : { 'isOptional': True },
-            'WhiteElo'     : { 'isOptional': True },
-            'BlackElo'     : { 'isOptional': True },
-            'WhiteUSCF'    : { 'isOptional': True },
-            'BlackUSCF'    : { 'isOptional': True },
-            'WhiteNA'      : { 'isOptional': True },
-            'BlackNA'      : { 'isOptional': True },
-            'WhiteType'    : { 'isOptional': True },
-            'BlackType'    : { 'isOptional': True },
-            'EventDate'    : { 'isOptional': True },
-            'EventSponsor' : { 'isOptional': True },
-            'Section'      : { 'isOptional': True },
-            'Stage'        : { 'isOptional': True },
-            'Board'        : { 'isOptional': True },
-        }
+        self.usedTagIdentifiers = []
 
         self.start()
         self.parseTree.show_tree()
 
+# Μέθοδοι για το διάβασμα token από τον Lexer
     def nextToken(self):
         self.currentPos += 1
 
@@ -127,36 +93,22 @@ class Parser:
         if (token['token_type'] == 'Comment'):
             self.nextToken()
 
-        return token
-
-    def prevToken(self):
-        self.currentPos -= 1
-
-        token = self.lexerExpressionList[self.currentPos]
-
-        if (token['token_type'] == 'Comment'):
-            self.prevToken()
-
-        return token
-
     def currentToken(self):
         return self.lexerExpressionList[self.currentPos]
 
-    def lookAhead(self):
-        token = self.nextToken()
-        self.prevToken()
-        return token
-
-    def expectType(self,expectedTokenType):
-        currentToken = self.nextToken()
+# Μέθοδοι που ελέγχουν αν το επόμενο token έχει συγκεκριμένη τιμή
+    def expectType(self, expectedTokenType):
+        currentToken = self.currentToken()
         if (currentToken['token_type'] != expectedTokenType):
             raise SyntacticalError(self.currentPos, expectedTokenType, currentToken['token_type'])            
 
-    def expectValue(self,expectedTokenValue):
-        currentToken = self.nextToken()
+    def expectValue(self, expectedTokenValue):
+        currentToken = self.currentToken()
         if (currentToken['token_value'] != expectedTokenValue):
             raise SyntacticalError(self.currentPos, expectedTokenValue, currentToken['token_value'])      
 
+# Μέθοδοι που διέπουν το Recursive Descent μέρος του Parser
+#  εφαρμόζοντας την γραμματική στο BNF που βρήκαμε.
     def start(self):
         if (not self.PGNDatabase()):
             return False
@@ -170,15 +122,17 @@ class Parser:
 
         self.currentNode.insert_node(Tree('PGNDatabase'))
         self.currentNode = self.currentNode.find_node('PGNDatabase')
-        lookAheadToken = self.lookAhead()
-        if (lookAheadToken['token_type'] is not 'WhiteSpace'):
+        currentToken = self.currentToken()
+        if (currentToken['token_type'] != 'WhiteSpace'):
             if (not self.PGNGame()):
                 return False
+            self.nextToken()    
             if (not self.PGNDatabase()):
                 return False
         else:
           self.Empty()
           self.currentNode = self.currentNode.get_parent()              
+        
         return True        
     
     def PGNGame(self):
@@ -187,6 +141,7 @@ class Parser:
 
         if (not self.TagSection()):
             return False
+        self.nextToken()     
         if (not self.MoveTextSection()):
             return False
 
@@ -196,10 +151,12 @@ class Parser:
     def TagSection(self):
         self.currentNode.insert_node(Tree('TagSection'))
         self.currentNode = self.currentNode.find_node('TagSection')
-        lookAheadToken = self.lookAhead()
-        if (lookAheadToken['token_type'] is not 'WhiteSpace'):
+
+        currentToken = self.currentToken()
+        if (currentToken['token_type'] != 'WhiteSpace'):
             if (not self.TagPair()):
                 return False
+            self.nextToken() 
             if (not self.TagSection()):
                 return False
         else:
@@ -210,14 +167,16 @@ class Parser:
     def TagPair(self):
         self.currentNode.insert_node(Tree('TagPair'))
         self.currentNode = self.currentNode.find_node('TagPair')
-
         self.expectValue('[')
+        self.nextToken()
         if (not self.TagName()):
             return False
+        self.nextToken()     
         if (not self.TagValue()):
             return False
-        self.expectValue(']')
 
+        self.nextToken()    
+        self.expectValue(']')
         self.currentNode = self.currentNode.get_parent() 
         return True
 
@@ -225,12 +184,17 @@ class Parser:
         self.expectType('Identifier')
         token = self.currentToken()
         tagIdentifier = token['token_value']
-        self.currentNode.insert_node(Tree('TagName', None, tagIdentifier))
+        self.currentNode.insert_node(Tree('TagName', None, token))
         self.currentNode = self.currentNode.find_node('TagName')
-        if (tagIdentifier not in self.tagIdentififierStack):
-            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} either does not exist or was already used')
+        
+        if (tagIdentifier in self.usedTagIdentifiers):
+            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} has already been used.')
+        
+        if (tagIdentifier not in ParserConstants.VALID_TAG_IDENTIFIERS):
+            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
         else:
-            self.tagIdentififierStack.pop(tagIdentifier)
+            self.usedTagIdentifiers.append(tagIdentifier)
+
         self.currentNode = self.currentNode.get_parent()
         return True
 
@@ -260,11 +224,11 @@ lexerExpressionList = [
             { 'token_type' : 'String',      'token_value' : 'The Rumble in the Jungle 1974' },
             { 'token_type' : 'Operator',    'token_value' : ']' },
             { 'token_type' : 'Operator',    'token_value' : '[' },
-            { 'token_type' : 'Identifier',  'token_value' : 'Event' },
+            { 'token_type' : 'Identifier',  'token_value' : 'Round' },
             { 'token_type' : 'String',      'token_value' : 'The Rumble in the Jungle 1974' },
             { 'token_type' : 'Operator',    'token_value' : ']' },
             { 'token_type' : 'Operator',    'token_value' : '[' },
-            { 'token_type' : 'Identifier',  'token_value' : 'Event' },
+            { 'token_type' : 'Identifier',  'token_value' : 'Site' },
             { 'token_type' : 'String',      'token_value' : 'The Rumble in the Jungle 1974' },
             { 'token_type' : 'Operator',    'token_value' : ']' },
             { 'token_type' : 'WhiteSpace',  'token_value' : '' },
