@@ -3,27 +3,27 @@ import re
 ## Η γραμματική του PGN εκφρασμένη σε BNF.
 ## Την γραμματική την βρήκαμε στο 
 
-# <PGN-database>',= <PGN-game> <PGN-database>
+# <PGN-database>:= <PGN-game> <PGN-database>
 #                    <empty>
-# <PGN-game>',= <tag-section> <movetext-section>
-# <tag-section>',= <tag-pair> <tag-section>
+# <PGN-game>:= <tag-section> <movetext-section>
+# <tag-section>:= <tag-pair> <tag-section>
 #                   <empty>
-# <tag-pair>',= [ <tag-name> <tag-value> ]
-# <tag-name>',= <identifier>
-# <tag-value>',= <string>
-# <movetext-section>',= <element-sequence> <game-termination>
-# <element-sequence>',= <element> <element-sequence>
+# <tag-pair>:= [ <tag-name> <tag-value> ]
+# <tag-name>:= <identifier>
+# <tag-value>:= <string>
+# <movetext-section>:= <element-sequence> <game-termination>
+# <element-sequence>:= <element> <element-sequence>
 #                        <recursive-variation> <element-sequence>
 #                        <empty>
-# <element>',= <move-number-indication>
+# <element>:= <move-number-indication>
 #               <SAN-move>
 #               <numeric-annotation-glyph>
-# <recursive-variation>',= ( <element-sequence> )
-# <game-termination>',= 1-0
+# <recursive-variation>:= ( <element-sequence> )
+# <game-termination>:= 1-0
 #                        0-1
 #                        1/2-1/2
 #                        *
-# <empty>',=
+# <empty>:=
 class Tree:
     def __init__(self, treeName='', rootNode=None):
         self.treeName = treeName
@@ -43,7 +43,7 @@ class Tree:
         self.currentNode = node
 
         if self.shouldTrace:
-            self.traceStack.append(node.id)
+            self.markedNodeStack.append(node.id)
 
     def goToParent(self):
         self.currentNode = self.currentNode.getParent()
@@ -56,20 +56,19 @@ class Tree:
         nodeToRemove.nodeParent.nodes.remove(nodeToRemove)
 
     def startMarking(self):
-        self.shouldTrace = True
+        self.shouldMark = True
 
     def stopMarking(self):
-        self.shouldTrace = False
+        self.shouldMark = False
 
     def removeMarkedNodes(self):
         for nodeId in self.markedNodeStack:
             self.removeNode(nodeId)
 
         self.clearMarkedNodeStack()
-
-
+    
     def clearMarkedNodeStack(self):
-        self.traceStack = []    
+        self.markedNodeStack = []    
 
 class Node:
     count = 0
@@ -179,15 +178,17 @@ class Parser:
         self.PGNDatabase()
 
     def PGNDatabase(self):
+        #FIXME: Check currentToken pos and stop scanning when EOF is reached.
         token = self.currentToken()
         # Για την αποφυγή του backtracking, αντί να προσπαθήσουμε πρώτα να matchάρουμε τον <empty> κανόνα
-        # και ύστερα τους κανόνες <PGN Game> <PGN Database> , απλά θέτουμε ότι αν δεν είναι WhiteSpace χαρακτήρας,
+        # και ύστερα τους κανόνες <PGN Game> <PGN Database>, απλά θέτουμε ότι αν δεν είναι WhiteSpace χαρακτήρας,
         # ισχύουν οι κανόνες <PGN Game> <PGN Database>
         if (token['token_type'] != 'WhiteSpace'):
             self.parseTree.insertNode(Node('PGNDatabase'))
             self.PGNGame()
             self.nextToken()    
             self.PGNDatabase()
+            
         else:
             self.Empty()
             self.parseTree.goToParent() 
@@ -212,6 +213,7 @@ class Parser:
             # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
             # required Tag Identifiers
             requiredTagIdentifiers = []
+            # TODO: Refactor this part. 
             for tagIdentifier, isOptional in ParserConstants.VALID_TAG_IDENTIFIERS.items():
                 if not isOptional['isOptional']:
                     requiredTagIdentifiers.append(tagIdentifier)
@@ -219,6 +221,8 @@ class Parser:
             for requiredTagIdentifier in requiredTagIdentifiers:
                 if requiredTagIdentifier not in self.usedTagIdentifiers:
                     raise SemanticalError(self.currentPos, 'Missing required Tags.')                   
+            
+            self.usedTagIdentifiers = []
 
             self.Empty() 
             self.parseTree.goToParent()
@@ -282,27 +286,29 @@ class Parser:
         self.maybe([self.MoveNumberIndication, self.SANMove, self.NumericAnnotationGlyph])
 
     def MoveNumberIndication(self):
+        currentToken = self.currentToken()
         self.expectType('Movement')
+        self.parseTree.insertNode(Node('Movement', currentToken))
 
     def SANMove(self):
-        token = self.currentToken()
+        currentToken = self.currentToken()
         # Χρήση RegEx για αναγνώριση κινήσεων.
         self.expectType('Expression')
         SANMoveRegEx = r"([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQ])?(\+|#)?$|^O-O(-O)?"
-        if (not re.match(SANMoveRegEx, token['token_value'])):
+        if (not re.match(SANMoveRegEx, currentToken['token_value'])):
             raise ParseError('Invalid move')
 
-        self.parseTree.insertNode(Node('SANMove', token))
+        self.parseTree.insertNode(Node('SANMove', currentToken))
         self.parseTree.goToParent()
 
     def NumericAnnotationGlyph(self):
-        token = self.currentToken()
+        currentToken = self.currentToken()
         self.expectType('Expression')
         NAGRegEx = r"\$[1-255]"
-        if (not re.fullmatch(NAGRegEx, token['token_value'])):
+        if (not re.fullmatch(NAGRegEx, currentToken['token_value'])):
             raise ParseError('Invalid move')
 
-        self.parseTree.insertNode(Node('NumericAnnotationGlyph', token))  
+        self.parseTree.insertNode(Node('NumericAnnotationGlyph', currentToken))  
         self.parseTree.goToParent()  
 
     def RecursiveVariation(self):
@@ -390,7 +396,7 @@ lexerExpressionList = [
     {'token_type': 'Identifier',  'token_value':  'EventCountry'},
     {'token_type': 'String',      'token_value':  'GBR'},
     {'token_type': 'Operator',    'token_value':  ']'},
-    {'token_type': 'WhiteSpace',    'token_value':  ''},
+    {'token_type': 'WhiteSpace',  'token_value':  ''},
     {'token_type': 'Movement',    'token_value':  '1'},
     {'token_type': 'Expression',  'token_value':  'd4'},
     {'token_type': 'Expression',  'token_value':  'd5'},
@@ -490,9 +496,8 @@ lexerExpressionList = [
     {'token_type': 'Movement',    'token_value':  '33'},
     {'token_type': 'Expression',  'token_value':  'Kd1'},
     {'token_type': 'Expression',  'token_value':  'Qf1+'},
-    {'token_type': 'WhiteSpace',    'token_value':  ''},
+    {'token_type': 'WhiteSpace',  'token_value':  ''},
     {'token_type': 'Expression',  'token_value':  '0-1'},
-    {'token_type': 'WhiteSpace',    'token_value':  ''},
     {'token_type': 'Operator',    'token_value':  '['},
     {'token_type': 'Identifier',  'token_value':  'Event'},
     {'token_type': 'String',      'token_value':  'GBR-ch 58th'},
@@ -553,7 +558,7 @@ lexerExpressionList = [
     {'token_type': 'Identifier',  'token_value':  'EventCountry'},
     {'token_type': 'String',      'token_value':  'GBR'},
     {'token_type': 'Operator',    'token_value':  ']'},
-        {'token_type': 'WhiteSpace',    'token_value':  ''},
+    {'token_type': 'WhiteSpace',  'token_value':  ''},
     {'token_type': 'Movement',    'token_value':  '1'},
     {'token_type': 'Expression',  'token_value':  'd4'},
     {'token_type': 'Expression',  'token_value':  'Nf6'},
@@ -697,7 +702,7 @@ lexerExpressionList = [
     {'token_type': 'Expression',  'token_value':  'Ke8'},
     {'token_type': 'WhiteSpace',    'token_value':  ''},
     {'token_type': 'Expression',  'token_value':  '0-1'},
-     {'token_type': 'WhiteSpace',    'token_value':  ''},
+
        
 ]
 Parser(lexerExpressionList)
