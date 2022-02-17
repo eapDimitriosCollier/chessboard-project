@@ -29,7 +29,7 @@ class Tree:
         self.treeName = treeName
         self.currentNode = rootNode
         self.rootNode = rootNode
-        self.shouldTrace = False
+        self.shouldMark = False
         self.markedNodeStack = []
     
     def showTree(self):
@@ -42,7 +42,7 @@ class Tree:
         self.currentNode.nodes.append(node)
         self.currentNode = node
 
-        if self.shouldTrace:
+        if self.shouldMark:
             self.markedNodeStack.append(node.id)
 
     def goToParent(self):
@@ -179,19 +179,17 @@ class Parser:
 
     def PGNDatabase(self):
         #FIXME: Check currentToken pos and stop scanning when EOF is reached.
-        token = self.currentToken()
         # Για την αποφυγή του backtracking, αντί να προσπαθήσουμε πρώτα να matchάρουμε τον <empty> κανόνα
         # και ύστερα τους κανόνες <PGN Game> <PGN Database>, απλά θέτουμε ότι αν δεν είναι WhiteSpace χαρακτήρας,
         # ισχύουν οι κανόνες <PGN Game> <PGN Database>
-        if (token['token_type'] != 'WhiteSpace'):
-            self.parseTree.insertNode(Node('PGNDatabase'))
-            self.PGNGame()
-            self.nextToken()    
+        self.parseTree.insertNode(Node('PGNDatabase'))
+        self.PGNGame()
+        if (self.currentToken()['token_type'] != 'EOF'): 
+            self.nextToken() 
             self.PGNDatabase()
-            
-        else:
-            self.Empty()
-            self.parseTree.goToParent() 
+        
+        self.Empty()
+        self.parseTree.goToParent() 
     
     def PGNGame(self):
         self.parseTree.insertNode(Node('PGNGame'))
@@ -267,20 +265,19 @@ class Parser:
     def MoveTextSection(self):
         self.parseTree.insertNode(Node('MoveTextSection'))
         self.ElementSequence()
-        self.nextToken()
         self.GameTermination()
+        self.nextToken()
         self.parseTree.goToParent()
 
     def ElementSequence(self):
         currentToken = self.currentToken()
-        if (currentToken['token_type'] != 'WhiteSpace'):
+        if (currentToken['token_type'] != 'GameTermination'):
             self.parseTree.insertNode(Node('ElementSequence'))
             self.maybe([self.Element, self.RecursiveVariation])
             self.nextToken()
             self.ElementSequence()
-        else:
-            self.Empty() 
-            self.parseTree.goToParent()
+
+        self.parseTree.goToParent()
 
     def Element(self):
         self.maybe([self.MoveNumberIndication, self.SANMove, self.NumericAnnotationGlyph])
@@ -321,16 +318,14 @@ class Parser:
 
     def GameTermination(self):
         token = self.currentToken()
-        self.expectType('Expression')
         GameTerminationRegex = r"1-0|1-1|0-1|\*"
         if (not re.fullmatch(GameTerminationRegex, token['token_value'])):
-            raise ParseError('Invalid Game Termination')
+            raise ParseError('#{self.currentPos} {token} Invalid Game Termination')
         
         self.parseTree.insertNode(Node('GameTermination', token))
         self.parseTree.goToParent()
-
+        
     def Empty(self):
-        self.expectType('WhiteSpace')
         self.parseTree.insertNode(Node('E'))
 
         self.parseTree.goToParent()
@@ -496,8 +491,8 @@ lexerExpressionList = [
     {'token_type': 'Movement',    'token_value':  '33'},
     {'token_type': 'Expression',  'token_value':  'Kd1'},
     {'token_type': 'Expression',  'token_value':  'Qf1+'},
+    {'token_type': 'GameTermination',  'token_value':  '0-1'},
     {'token_type': 'WhiteSpace',  'token_value':  ''},
-    {'token_type': 'Expression',  'token_value':  '0-1'},
     {'token_type': 'Operator',    'token_value':  '['},
     {'token_type': 'Identifier',  'token_value':  'Event'},
     {'token_type': 'String',      'token_value':  'GBR-ch 58th'},
@@ -700,9 +695,7 @@ lexerExpressionList = [
     {'token_type': 'Movement',    'token_value':  '47'},
     {'token_type': 'Expression',  'token_value':  'Rb7+'},
     {'token_type': 'Expression',  'token_value':  'Ke8'},
-    {'token_type': 'WhiteSpace',    'token_value':  ''},
-    {'token_type': 'Expression',  'token_value':  '0-1'},
-
-       
+    {'token_type': 'GameTermination', 'token_value':  '0-1'},
+    {'token_type': 'EOF',  'token_value':  ''},
 ]
 Parser(lexerExpressionList)
