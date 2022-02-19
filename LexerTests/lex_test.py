@@ -5,6 +5,7 @@ print (100 * "*")
 print ("\nAscending....")
 
 Lex=Lexer(txt)
+
 game=0
 while not Lex.EOF:
     token=Lex.GetToken
