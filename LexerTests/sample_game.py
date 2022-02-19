@@ -17,6 +17,8 @@ txt="""
 [EventRounds "11"]
 [EventCountry "GBR"]
 
+
+
 1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 e6 5. Bg5 dxc4 6. e4 b5 7. Qc2 h6 8.
 Bh4 Be7 9. Be2 g5 10. Bg3 g4 11. Ne5 b4 12. Na4 Qxd4 13. O-O Qxe4 14. Qd2
 Ba6 15. Rfe1 Qd5 16. Qf4 Nbd7 17. Nxc4 Nh5 18. Qc1 Nxg3 19. hxg3 Bb5 20.

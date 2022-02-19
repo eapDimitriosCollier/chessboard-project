@@ -139,7 +139,8 @@ class Lexer:
                                 self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer})
                             Buffer=""
                     else:
-                        if ord(char)==10: #new line character
+                        #add only one EMPTY token on multiple blank lines
+                        if ord(char)==10 and len(self.tokens)>1 and self.tokens[-1]!={'token_type': 'EMPTY', 'token_value':None}: #new line character
                             self.tokens.append({'token_type': "EMPTY", 'token_value':None})
                         else:
                             Buffer+=char 
