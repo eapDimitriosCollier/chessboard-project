@@ -21,8 +21,7 @@ class ACTION(Enum):
     TRANSERTDIS = 3    #Transit State, Insert Token, Discard New Char
     TRANSERTDIN = 4    #Transit State, Insert Token on New State, Discard Last Char
 
-
-class Lexer:
+class Tables:
 
                    #Operator          ,LBrace             ,RBrace             ,Quote              ,Char               ,Num                ,White Space        ,Period             ,Symbol
     State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR),#BASE_S0
@@ -58,7 +57,8 @@ class Lexer:
                 ("\."),             #Column 7 - Period
                 ("[^\[\{}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
 
-    
+class Lexer:
+
     def __init__(self,text=None) -> None:
         self.tokens=[]
         self.index=0
@@ -108,10 +108,10 @@ class Lexer:
         for char in txt + " ":
             pos+=1
             Col=0    
-            for symbol in Lexer.SymbolsTbl:
+            for symbol in Tables.SymbolsTbl:
                 if (re.match(symbol,char)):
-                    NewState=Lexer.State_Table[State.value][Col]
-                    Action=Lexer.Action_Table[State.value][Col]
+                    NewState=Tables.State_Table[State.value][Col]
+                    Action=Tables.Action_Table[State.value][Col]
                     
                     if NewState==STATE.THROWERROR: 
                         print ("Error in position:",pos)
@@ -145,5 +145,16 @@ class Lexer:
                 Col+=1
 
 
+if __name__ == '__main__':
+    from sample_game import txt
+    Lex=Lexer(txt)
 
+    game=0
+    while not Lex.EOF:
+        token=Lex.GetToken
+        print(token)
+        if token['token_type']=='GAME_END':
+            game+=1
+        Lex.MoveNext()
+    print ("Total Games:",game)
    
