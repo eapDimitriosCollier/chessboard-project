@@ -59,15 +59,13 @@ class Lexer:
                 ("[^\[\{}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
 
     
-    def __init__(self,text) -> None:
+    def __init__(self,text=None) -> None:
         self.tokens=[]
         self.index=0
         self.EOF=False
         self.BOF=True    
-        self.text=text
-        self.Tokenize(text)
+        if text:self.Tokenize(text)
         
-    
     @property
     def GetToken(self):
         return self.tokens[self.index]
