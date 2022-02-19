@@ -1,3 +1,4 @@
+from email.policy import strict
 from enum import Enum,unique
 import re
 
@@ -138,7 +139,10 @@ class Lexer:
                                 self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer})
                             Buffer=""
                     else:
-                        Buffer+=char 
+                        if ord(char)==10: #new line character
+                            self.tokens.append({'token_type': "EMPTY", 'token_value':None})
+                        else:
+                            Buffer+=char 
                         
                     State=NewState
                     break
