@@ -1,7 +1,10 @@
-from distutils.log import error
 from enum import Enum,unique
-from logging import exception
 import re
+
+# LEXICAL GRAMMAR
+# <TAGPAIR>= "[" + <TAGNAME> + <TAGVALUE> + "]"
+# <TAGNAME>= <IDENTIFIER>
+# <TAGVALUE>= STRING
 
 @unique
 class STATE(Enum):
@@ -158,25 +161,78 @@ class Lexer:
                     State=NewState
                     break
                 Col+=1
+        #Second Pass for identifing lexical patterns
+        self.LexicalGrammarCHK()
+    
+    def checkLBracket(self,token):
+        if token['token_type']=="OPERATOR" and token['token_value']=="[":
+            index=self.index
+            self.MoveNext()
 
+            if self.checkTagName(self.GetToken):
+                self.RemoveToken(index)
+                return True
+        return False
+            
+
+    def checkTagName(self,token)->bool:
+        if token['token_type']=="IDENTIFIER":
+            index=self.index
+            self.MoveNext()
+            if self.checkTagValue(self.GetToken):
+                self.tokens[index]={"token_type": "TAG_NAME","token_value":token['token_value']}
+                return True
+        return False
+
+    def checkTagValue(self,token)->bool:
+        if token['token_type']=="STRING":
+            index=self.index
+            self.MoveNext()
+            if self.checkRBracket(self.GetToken):
+                self.tokens[index]={"token_type": "TAG_VALUE","token_value":token['token_value']}
+                return True
+        return False
+    
+    def checkRBracket(self,token)->bool:
+        if token['token_type']=="OPERATOR" and token['token_value']=="]":
+            index=self.index
+            self.RemoveToken(index)
+            return True
+        return False
+
+    def RemoveToken(self,index):
+        try:
+            del self.tokens[index]
+        except Exception as e:
+            print (e)
+
+        
+
+    def LexicalGrammarCHK(self):
+        while not self.EOF:
+            token=self.GetToken
+            if self.checkLBracket(token):
+                self.MoveFirst()        
+            self.MoveNext()
+        self.MoveFirst()
 
 if __name__ == '__main__':
     from sample_game import txt
 
-    try: 
-        Lex=Lexer(txt)
-        game=0
-        
-        while not Lex.EOF:
-            token=Lex.GetToken
-            print(token)
-            if token['token_type']=='GAME_END':
-                game+=1
-            Lex.MoveNext()
-        
-        if game: print ("Games count:",game)    
-    except Exception as e:
-        print (e)
+    #try: 
+    Lex=Lexer(txt)
+    game=0
+    
+    while not Lex.EOF:
+        token=Lex.GetToken
+        print(token)
+        if token['token_type']=='GAME_END':
+            game+=1
+        Lex.MoveNext()
+    
+    if game: print ("Games count:",game)    
+    #except Exception as e:
+    #    print (e)
 
     
 
