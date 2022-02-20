@@ -1,5 +1,3 @@
-
-
 txt="""
 [Event "GBR-ch 58th"]
 [Site "Blackpool"]
@@ -24,9 +22,9 @@ Bh4 Be7 9. Be2 g5 10. Bg3 g4 11. Ne5 b4 12. Na4 Qxd4 13. O-O Qxe4 14. Qd2
 Ba6 15. Rfe1 Qd5 16. Qf4 Nbd7 17. Nxc4 Nh5 18. Qc1 Nxg3 19. hxg3 Bb5 20.
 Qc2 Qg5 21. Rad1 Nf6 22. Nd6+ Bxd6 23. Rxd6 O-O 24. Nc5 Rad8 25. Rxd8 Rxd8
 26. Bxb5 cxb5 27. Nd3 Qf5 28. Re3 a5 29. Kf1 Ne4 30. Ke2 Rd4 31. Qc7 Rxd3
-32. Rxd3 Qxf2+ 33. Kd1 Qf1+ 0-1"""
+32. Rxd3 Qxf2+ 33. Kd1 Qf1+ 0-1
 
-"""[Event "GBR-ch 58th"]
+[Event "GBR-ch 58th"]
 [Site "Blackpool"]
 [Date "1971.08.13"]
 [Round "5"]

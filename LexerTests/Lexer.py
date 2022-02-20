@@ -29,7 +29,7 @@ class Tables:
                   (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.THROWERROR   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR),#OPERATOR_S1
                   (STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
                   (STATE.COMMENT      ,STATE.COMMENT      ,STATE.BASE         ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT   ),#COMMENT_S3
-                  (STATE.GAME_END     ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.GAME_END  ),#NUMBER_S4
+                  (STATE.GAME_END     ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.THROWERROR   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.GAME_END  ),#NUMBER_S4
                   (STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.BASE         ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING    ),#STRING)_S5
                   (STATE.EXPRESSION   ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#EXPRESSION_S6
                   (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.THROWERROR   ,STATE.THROWERROR),#MOVEMENT_S7
@@ -58,13 +58,21 @@ class Tables:
                 ("\."),             #Column 7 - Period
                 ("[^\[\{}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
 
+
+class LexicalError(Exception):
+    def __init__(self, line, position):
+        self.message = f'Unknown lexeme at line {line}, position {position}'
+        super().__init__(self.message)
+        
 class Lexer:
 
     def __init__(self,text=None) -> None:
         self.tokens=[]
+        self.ErrorLog=[]
         self.index=0
         self.EOF=False
-        self.BOF=True    
+        self.BOF=True
+        self.Err=False    
         if text:self.Tokenize(text)
         
     @property
@@ -100,13 +108,19 @@ class Lexer:
             self.index=len(self.tokens)-1
 
     def Tokenize(self,txt):
-        Buffer="";pos=0
+        Buffer="";pos=0;line=1
         State=STATE.BASE
         self.tokens=[]
         self.EOF=False
-        self.BOF=True  
+        self.BOF=True 
+        self.Err=False; self.ErrorLog=[]
+        
         
         for char in txt + " ":
+            #line+=1 if ord(char)==10 else 0
+            if ord(char)==10:
+                pos=0
+                line+=1
             pos+=1
             Col=0    
             for symbol in Tables.SymbolsTbl:
@@ -114,11 +128,13 @@ class Lexer:
                     NewState=Tables.State_Table[State.value][Col]
                     Action=Tables.Action_Table[State.value][Col]
                     
-                    if NewState==STATE.THROWERROR: 
-                        print ("Error in position:",pos)
-                        raise Exception('Unknown Lexeme!')
-                        break
-                    #print (pos)
+                    if NewState==STATE.THROWERROR:       
+                        try:
+                            raise LexicalError(line,pos)
+                        except LexicalError as e:
+                            self.ErrorLog.append(e)
+                            self.Err=True
+                            break
                     
                     if State != NewState:
                         if Action==ACTION.TRANSERT:
@@ -152,14 +168,18 @@ class Lexer:
 
 if __name__ == '__main__':
     from sample_game import txt
+    #Lex=Lexer(" 12a 12e 5this is a pipe")
     Lex=Lexer(txt)
 
     game=0
-    while not Lex.EOF:
+    while not Lex.EOF and not Lex.Err:
         token=Lex.GetToken
         print(token)
         if token['token_type']=='GAME_END':
             game+=1
         Lex.MoveNext()
-    print ("Total Games:",game)
-   
+    
+    for ErrorItem in Lex.ErrorLog:
+        print(ErrorItem)
+    
+
