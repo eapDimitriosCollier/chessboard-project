@@ -24,7 +24,7 @@ class ACTION(Enum):
 class Tables:
 
                    #Operator          ,LBrace             ,RBrace             ,Quote              ,Char               ,Num                ,White Space        ,Period             ,Symbol
-    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR),#BASE_S0
+    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.GAME_END  ),#BASE_S0
                   (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.THROWERROR   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR),#OPERATOR_S1
                   (STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
                   (STATE.COMMENT      ,STATE.COMMENT      ,STATE.BASE         ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT   ),#COMMENT_S3
@@ -112,7 +112,7 @@ class Lexer:
         self.tokens=[]
         self.EOF=False
         self.BOF=True 
-        self.Err=False; self.ErrorLog=[]
+        self.Err=False; self.ErrorLog.clear()
         
         
         for char in txt + " ":
@@ -178,6 +178,7 @@ if __name__ == '__main__':
             game+=1
         Lex.MoveNext()
     
+    if game: print ("Games count:",game)    
     for ErrorItem in Lex.ErrorLog:
         print(ErrorItem)
     
