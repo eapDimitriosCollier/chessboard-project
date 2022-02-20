@@ -4,7 +4,7 @@ import re
 # LEXICAL GRAMMAR
 # <TAGPAIR>= "[" + <TAGNAME> + <TAGVALUE> + "]"
 # <TAGNAME>= <IDENTIFIER>
-# <TAGVALUE>= STRING
+# <TAGVALUE>= <STRING>
 
 @unique
 class STATE(Enum):
