@@ -1,5 +1,6 @@
 import ParserConstants
 import re
+
 ## Η γραμματική του PGN εκφρασμένη σε BNF.
 ## Την γραμματική την βρήκαμε στο 
 
@@ -83,8 +84,7 @@ class Node:
         self.id = Node.count
     
     def showNode(self):
-        print('Node name:\t', self.nodeName)     
-        print('Node info:\t', self.nodeInfo) 
+        print(self.nodeName)     
         for node in self.nodes:
             node.showNode()
 
@@ -103,15 +103,15 @@ class Node:
 
 class ParseError(Exception):
     def __init__(self, message):
-        super().__init__(message)
-class SyntacticalError(ParseError):
+        super().__init__(f'ParseError: '+message)
+class SyntaxError(ParseError):
     def __init__(self, tokenIndex, expected, got):
-        self.message = f'SyntacticalError on token #{tokenIndex}. Expected {expected}, got {got}'
+        self.message = f'SyntaxError on token #{tokenIndex}. Expected {expected}, got {got}'
         super().__init__(self.message)
 
-class SemanticalError(ParseError):
+class LogicError(ParseError):
     def __init__(self, tokenIndex, errorMessage):
-        self.message = f'SemanticalError on token #{tokenIndex}. {errorMessage}'
+        self.message = f'LogicError on token #{tokenIndex}. {errorMessage}'
         super().__init__(self.message)
 
 class Parser:
@@ -142,12 +142,12 @@ class Parser:
     def expectType(self, expectedTokenType):
         currentToken = self.currentToken()
         if (currentToken['token_type'] != expectedTokenType):
-            raise SyntacticalError(self.currentPos, expectedTokenType, currentToken['token_type'])            
+            raise SyntaxError(self.currentPos, expectedTokenType, currentToken['token_type'])            
 
     def expectValue(self, expectedTokenValue):
         currentToken = self.currentToken()
         if (currentToken['token_value'] != expectedTokenValue):
-            raise SyntacticalError(self.currentPos, expectedTokenValue, currentToken['token_value'])      
+            raise SyntaxError(self.currentPos, expectedTokenValue, currentToken['token_value'])      
 
     def maybe(self, listOfFunctions):
         lastPosition = self.currentPos
@@ -173,12 +173,11 @@ class Parser:
                 break
         
 # Μέθοδοι που διέπουν το Recursive Descent μέρος του Parser
-#  εφαρμόζοντας την γραμματική στο BNF που βρήκαμε.
+# εφαρμόζοντας την γραμματική στο BNF που βρήκαμε.
     def start(self):
         self.PGNDatabase()
 
     def PGNDatabase(self):
-        #FIXME: Check currentToken pos and stop scanning when EOF is reached.
         # Για την αποφυγή του backtracking, αντί να προσπαθήσουμε πρώτα να matchάρουμε τον <empty> κανόνα
         # και ύστερα τους κανόνες <PGN Game> <PGN Database>, απλά θέτουμε ότι αν δεν είναι WhiteSpace χαρακτήρας,
         # ισχύουν οι κανόνες <PGN Game> <PGN Database>
@@ -212,13 +211,13 @@ class Parser:
             # required Tag Identifiers
             requiredTagIdentifiers = []
             # TODO: Refactor this part. 
-            for tagIdentifier, isOptional in ParserConstants.VALID_TAG_IDENTIFIERS.items():
-                if not isOptional['isOptional']:
-                    requiredTagIdentifiers.append(tagIdentifier)
+            for tagIdentifier in ParserConstants.VALID_TAG_IDENTIFIERS:
+                if not tagIdentifier['isOptional']:
+                    requiredTagIdentifiers.append(tagIdentifier['tagName'])
             
             for requiredTagIdentifier in requiredTagIdentifiers:
                 if requiredTagIdentifier not in self.usedTagIdentifiers:
-                    raise SemanticalError(self.currentPos, 'Missing required Tags.')                   
+                    raise LogicError(self.currentPos, 'Missing required Tags.')                   
             
             self.usedTagIdentifiers = []
 
@@ -247,10 +246,10 @@ class Parser:
         self.parseTree.insertNode(Node('TagName', token))
         
         if (tagIdentifier in self.usedTagIdentifiers):
-            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} has already been used.')
+            raise LogicError(self.currentPos, f'Tag Identifier {tagIdentifier} has already been used.')
         
         if (tagIdentifier not in ParserConstants.VALID_TAG_IDENTIFIERS):
-            raise SemanticalError(self.currentPos, f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
+            raise LogicError(self.currentPos, f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
         else:
             self.usedTagIdentifiers.append(tagIdentifier)
 
