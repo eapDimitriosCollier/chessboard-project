@@ -1,4 +1,6 @@
+from distutils.log import error
 from enum import Enum,unique
+from logging import exception
 import re
 
 @unique
@@ -67,11 +69,9 @@ class Lexer:
 
     def __init__(self,text=None) -> None:
         self.tokens=[]
-        self.ErrorLog=[]
         self.index=0
         self.EOF=False
         self.BOF=True
-        self.Err=False    
         if text:self.Tokenize(text)
         
     @property
@@ -112,7 +112,7 @@ class Lexer:
         self.tokens=[]
         self.EOF=False
         self.BOF=True 
-        self.Err=False; self.ErrorLog.clear()
+        #self.Err=False; self.ErrorLog.clear()
         
         
         for char in txt + " ":
@@ -126,14 +126,9 @@ class Lexer:
                 if (re.match(symbol,char)):
                     NewState=Tables.State_Table[State.value][Col]
                     Action=Tables.Action_Table[State.value][Col]
-                    
-                    if NewState==STATE.THROWERROR:       
-                        try:
-                            raise LexicalError(line,pos)
-                        except LexicalError as e:
-                            self.ErrorLog.append(e)
-                            self.Err=True
-                            break
+
+                    if NewState==STATE.THROWERROR:
+                        raise LexicalError(line,pos)
                     
                     if State != NewState:
                         if Action==ACTION.TRANSERT:
@@ -168,18 +163,22 @@ class Lexer:
 if __name__ == '__main__':
     from sample_game import txt
     #Lex=Lexer(" 12a 12e 5this is a pipe")
-    Lex=Lexer(txt)
-
-    game=0
-    while not Lex.EOF and not Lex.Err:
-        token=Lex.GetToken
-        print(token)
-        if token['token_type']=='GAME_END':
-            game+=1
-        Lex.MoveNext()
     
-    if game: print ("Games count:",game)    
-    for ErrorItem in Lex.ErrorLog:
-        print(ErrorItem)
+
+    try: 
+        Lex=Lexer(txt)
+        game=0
+        
+        while not Lex.EOF:
+            token=Lex.GetToken
+            print(token)
+            if token['token_type']=='GAME_END':
+                game+=1
+            Lex.MoveNext()
+        
+        if game: print ("Games count:",game)    
+    except Exception as e:
+        print (e)
+
     
 
