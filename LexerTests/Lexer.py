@@ -162,8 +162,6 @@ class Lexer:
 
 if __name__ == '__main__':
     from sample_game import txt
-    #Lex=Lexer(" 12a 12e 5this is a pipe")
-    
 
     try: 
         Lex=Lexer(txt)
