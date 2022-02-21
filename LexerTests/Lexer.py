@@ -1,10 +1,16 @@
 from enum import Enum,unique
 import re
 
-# LEXICAL GRAMMAR
-# <TAGPAIR>= "[" + <TAGNAME> + <TAGVALUE> + "]"
-# <TAGNAME>= <IDENTIFIER>
-# <TAGVALUE>= <STRING>
+# Lexer breaks the PGN file in tokens.
+# It additionaly removes comments and Recursive Variation based on the following grammar to feed a cleand token list to the parser.
+
+# <recursive-variation> ::= ( <element-sequence> )
+# <element-sequence> ::= <element> <element-sequence>
+#                        <recursive-variation> <element-sequence>
+#                        <empty>
+# <element> ::= <move-number-indication>
+#               <SAN-move>
+#               <numeric-annotation-glyph>
 
 @unique
 class STATE(Enum):
@@ -17,7 +23,7 @@ class STATE(Enum):
     STRING = 5
     EXPRESSION = 6
     MOVEMENT = 7
-    GAME_END = 8
+
      
 @unique
 class ACTION(Enum):
@@ -29,17 +35,15 @@ class ACTION(Enum):
 class Tables:
 
                    #Operator          ,LBrace             ,RBrace             ,Quote              ,Char               ,Num                ,White Space        ,Period             ,Symbol
-    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.GAME_END  ),#BASE_S0
-                  (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.THROWERROR   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR),#OPERATOR_S1
-                  (STATE.BASE         ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
+    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#BASE_S0
+                  (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.THROWERROR),#OPERATOR_S1
+                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
                   (STATE.COMMENT      ,STATE.COMMENT      ,STATE.BASE         ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT   ),#COMMENT_S3
-                  (STATE.GAME_END     ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.THROWERROR   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.GAME_END  ),#NUMBER_S4
+                  (STATE.EXPRESSION   ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.THROWERROR   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.EXPRESSION),#NUMBER_S4
                   (STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.BASE         ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING    ),#STRING)_S5
-                  (STATE.EXPRESSION   ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#EXPRESSION_S6
-                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.THROWERROR   ,STATE.THROWERROR),#MOVEMENT_S7
-                  (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.GAME_END     ,STATE.BASE         ,STATE.THROWERROR   ,STATE.GAME_END  ))#GAME_TERM_S8
+                  (STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.EXPRESSION   ,STATE.EXPRESSION),#EXPRESSION_S6
+                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.THROWERROR))#MOVEMENT_S7
 
-                   #Operator          ,LBrace             ,RBrace             ,Quote              ,Char               ,Num                ,White Space        ,Period             ,Symbol
     Action_Table=((ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#BASE_S0
                   (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#IDENTIFIER_S2
                   (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSIT     ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSIT  ),#COMMENT_S3
@@ -47,12 +51,12 @@ class Tables:
                   (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIN ,ACTION.TRANSIT  ),#NUMBER_S4
                   (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#STRING_S5
                   (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#EXPRESSION_S6
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#MOVEMENT_S7
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ))#GAME_TERM_S8
+                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ))#MOVEMENT_S7
+                  
 
     
     
-    SymbolsTbl=(("[\[\]]"),       #Column 0 - Operator
+    SymbolsTbl=(("[\[\]()]"),       #Column 0 - Operator
                 ("{"),              #Column 1 - Right Brace
                 ("}"),              #Column 2 - Left Brace
                 ("\""),             #Column 3 - Quote
@@ -60,13 +64,28 @@ class Tables:
                 ("[0-9]"),          #Column 5 - Number
                 ("[ \t\r\n\f]"),    #Column 6 - White Space
                 ("\."),             #Column 7 - Period
-                ("[^\[\{}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
+                ("[^\[\](){}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
+                #Special Symbols ("/*-")
 
+class ErrorHandling(Exception):
+    def __init__(self,ErrMessage):
+        self.ErrMessage='Lexical Error! \n' + ErrMessage
+        super().__init__(self.ErrMessage)
 
-class LexicalError(Exception):
+class LexicalError(ErrorHandling):
     def __init__(self, line, position):
-        self.message = f'Unknown lexeme at line {line}, position {position}'
-        super().__init__(self.message)
+        self.ErrMessage = f'Unknown lexeme at line {line}, position {position}'
+        super().__init__(self.ErrMessage)
+
+class TokenPatternError(ErrorHandling):
+    def __init__(self, line, position):
+        self.ErrMessage = f'Unmathcing lexeme staring at line {line}, position {position}'
+        super().__init__(self.ErrMessage)
+
+class TokenIndexError(ErrorHandling):
+    def __init__(self,index):
+        self.ErrMessage = f'Token list index {index} out of range'
+        super().__init__(self.ErrMessage)
         
 class Lexer:
 
@@ -78,10 +97,10 @@ class Lexer:
         if text:self.Tokenize(text)
         
     @property
-    def GetToken(self):
+    def GetToken(self)->int:
         return self.tokens[self.index]
     
-    def MoveNext(self):
+    def MoveNext(self) -> None:
         if self.index<len(self.tokens)-1:            
             self.index+=1
             self.EOF=False
@@ -90,7 +109,7 @@ class Lexer:
             self.EOF=True
             self.BOF=False
             
-    def MovePrevious(self):
+    def MovePrevious(self) -> None:
         if self.index>0:            
             self.index-=1
             self.BOF=False
@@ -99,17 +118,32 @@ class Lexer:
             self.EOF=False
             self.BOF=True
 
-    def MoveFirst(self):
+    def MoveFirst(self) -> None:
             self.EOF=False
             self.BOF=True
             self.index=0
         
-    def MoveLast(self):
+    def MoveLast(self) -> None:
             self.EOF=True
             self.BOF=False
             self.index=len(self.tokens)-1
 
-    def Tokenize(self,txt):
+    def SetPosition(self,index) -> None:
+            if index<0 or index > len(self.tokens)-1:
+                raise TokenIndexError(index)
+            else:            
+                if index==len(self.tokens)-1:
+                    self.EOF=True
+                    self.BOF=False
+                elif index==0:
+                    self.EOF=False
+                    self.BOF=True
+
+                self.index=index
+
+
+
+    def Tokenize(self,txt) -> None:
         Buffer="";pos=0;line=1
         State=STATE.BASE
         self.tokens=[]
@@ -118,11 +152,8 @@ class Lexer:
         #self.Err=False; self.ErrorLog.clear()
         
         
-        for char in txt + " ":
+        for char in txt + " \n":
             #line+=1 if ord(char)==10 else 0
-            if ord(char)==10:
-                pos=0
-                line+=1
             pos+=1
             Col=0    
             for symbol in Tables.SymbolsTbl:
@@ -137,102 +168,144 @@ class Lexer:
                         if Action==ACTION.TRANSERT:
                             if Buffer.strip():
                                 #print (STATE(State).name,"::",Buffer) #Insert old Buf in token list    
-                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer})
+                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
                             Buffer=char.strip()                                                            
                         elif Action==ACTION.TRANSIT:
                             Buffer+=char
                         elif Action==ACTION.TRANSERTDIS:
                             if Buffer.strip():
                                 #print (STATE(State).name,"::",Buffer) #Insert Buf+new char in token list
-                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer})
+                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
                             Buffer=""
                         elif Action==ACTION.TRANSERTDIN:
                             if Buffer.strip():
                                 #print (STATE(NewState).name,"::",Buffer) #Insert Buf+new char in token list
-                                self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer})
+                                self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
                             Buffer=""
                     else:
                         #add only one EMPTY token on multiple blank lines
-                        if ord(char)==10 and len(self.tokens)>1 and self.tokens[-1]!={'token_type': 'EMPTY', 'token_value':None}: #new line character
-                            self.tokens.append({'token_type': "EMPTY", 'token_value':None})
+                        if ord(char)==10 and len(self.tokens)>1 and self.tokens[-1]['token_type']!='EMPTY': 
+                            if ( len(Buffer)>=1 and not Buffer.strip() ) or pos==1:
+                                self.tokens.append({'token_type': "EMPTY", 'token_value':None, 'Line':line , 'Position':pos})
                         else:
                             Buffer+=char 
                         
                     State=NewState
                     break
                 Col+=1
-        #Second Pass for identifing lexical patterns
-        self.LexicalGrammarCHK()
-    
-    def checkLBracket(self,token):
-        if token['token_type']=="OPERATOR" and token['token_value']=="[":
-            index=self.index
+            #Increment line on line feed character
+            if ord(char)==10:
+                pos=0
+                line+=1
+
+        #second pass to remove comments and recursive annotation
+        self.TokenizeExtended()
+
+    def _insertGameEnd(self):
+        self.MoveFirst()
+        while not self.EOF:
+            token=self.GetToken
+            game_termination= ('1-0','0-1','1/2-1/2','*')
+            if token['token_type']==STATE.EXPRESSION.name and token['token_value'] in game_termination:
+                self.tokens[self.index]['token_type']="GAME_END"
             self.MoveNext()
 
-            if self.checkTagName(self.GetToken):
-                self.RemoveToken(index)
-                return True
-        return False
+    def _RemoveComments(self,token=None)->None:
+        if token:
+            if token['token_type']==STATE.COMMENT.name:
+                index=self.index
+                self._RemoveToken(index)
+                self.MovePrevious()
+        else:
+            self.MoveFirst()
+            while not self.EOF:
+                token=self.GetToken
+                if token['token_type']==STATE.COMMENT.name:
+                    index=self.index
+                    self._RemoveToken(index)
+                    self.index-=1
+                self.MoveNext()
+
+    def _RemoveRecursiveAnnotation(self,MatchState: bool = False, StartingPosition:int = 0,Ret:bool = False )->None:
+        if not StartingPosition:
+            self.MoveFirst()
+        CurrentPos=StartingPosition
+        Match=MatchState
+        while not self.EOF:
+            token=self.GetToken
+            #if Left parenthesis is not found yet
+            if not Match:
+                if self._checkLParenthesis(token):
+                    Match=True
+                    #print(token)
+                    CurrentPos=self.index
+                    self.MoveNext()
+                    continue
+            #if Left parenthesis has already found
+            elif Match:
+                #match Right Parenthesis and delete all the tokens in between
+                if self._checkRParenthesis(token):
+                    #print (token)
+                    for i in range(CurrentPos,self.index+1):
+                        self._RemoveToken(CurrentPos)
+                    self.index=CurrentPos
+                    # continues on single matching parenthesis and returns on nested parenthesis
+                    if not Ret:
+                        Match=False
+                        continue
+                    else:
+                        return
+                #if Nested Left Parenthesis is found call the method recursively
+                elif self._checkLParenthesis(token):
+                    #print (token)
+                    self.MoveNext()
+                    self._RemoveRecursiveAnnotation(MatchState=True,StartingPosition=self.index-1,Ret=True)
+                    continue
+            self.MoveNext()
             
 
-    def checkTagName(self,token)->bool:
-        if token['token_type']=="IDENTIFIER":
-            index=self.index
-            self.MoveNext()
-            if self.checkTagValue(self.GetToken):
-                self.tokens[index]={"token_type": "TAG_NAME","token_value":token['token_value']}
-                return True
-        return False
-
-    def checkTagValue(self,token)->bool:
-        if token['token_type']=="STRING":
-            index=self.index
-            self.MoveNext()
-            if self.checkRBracket(self.GetToken):
-                self.tokens[index]={"token_type": "TAG_VALUE","token_value":token['token_value']}
-                return True
-        return False
-    
-    def checkRBracket(self,token)->bool:
-        if token['token_type']=="OPERATOR" and token['token_value']=="]":
-            index=self.index
-            self.RemoveToken(index)
+    def _checkLParenthesis(self,token)->bool:
+        if token['token_type']==STATE.OPERATOR.name and token['token_value']=="(":
             return True
-        return False
+        else:
+            return False
 
-    def RemoveToken(self,index):
+    def _checkRParenthesis(self,token)->bool:
+        if token['token_type']==STATE.OPERATOR.name and token['token_value']==")":
+            return True
+        else:
+            return False
+        
+    def _RemoveToken(self,index):
         try:
             del self.tokens[index]
         except Exception as e:
             print (e)
 
-        
-
-    def LexicalGrammarCHK(self):
-        while not self.EOF:
-            token=self.GetToken
-            if self.checkLBracket(token):
-                self.MoveFirst()        
-            self.MoveNext()
+    def TokenizeExtended(self)->None:
+        self._RemoveComments()
+        self._RemoveRecursiveAnnotation()
+        self._insertGameEnd()
         self.MoveFirst()
+
 
 if __name__ == '__main__':
     from sample_game import txt
 
-    #try: 
     Lex=Lexer(txt)
-    game=0
-    
+    game=1;cnt=0
+    Lex.MoveFirst()
+    i=0
+    token=Lex.GetToken
     while not Lex.EOF:
+        oldToken=token
         token=Lex.GetToken
-        print(token)
-        if token['token_type']=='GAME_END':
-            game+=1
+        print(f"Game Id: {game} -Token Id: {i} --> {token}")
+        if token["token_type"]=="EMPTY" and oldToken["token_type"]=='GAME_END':
+            i=0;game+=1
+        i+=1        
         Lex.MoveNext()
-    
-    if game: print ("Games count:",game)    
-    #except Exception as e:
-    #    print (e)
+
 
     
 

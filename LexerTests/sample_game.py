@@ -1,28 +1,87 @@
 txt="""
-[Event "GBR-ch 58th"]
-[Site "Blackpool"]
-[Date "1971.08.12"]
-[Round "4"]
-[White "Littlewood, John Eric"]
-[Black "Whiteley, Andrew"]
-[Result "0-1"]
-[WhiteElo "2310"]
-[BlackElo "2310"]
-[ECO "D44"]
-[EventDate "1971.08.09"]
-[PlyCount "66"]
-[EventType "swiss"]
-[EventRounds "11"]
-[EventCountry "GBR"]
+[Event "GMA, Wijk aan Zee NED"] 
+[Site "?"]
+[Date "2003.??.??"]
+[Round "1"]
+[White "Anand,V"]
+[Black "Radjabov,T"]
+[Result "1/2"]
+[WhiteElo "2750"]
+[BlackElo "2620"]
+[ECO "C12"]
+[PlyCount "55"]
+[Annotator "Hathaway"]
 
-
-
-1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 e6 5. Bg5 dxc4 6. e4 b5 7. Qc2 h6 8.
-Bh4 Be7 9. Be2 g5 10. Bg3 g4 11. Ne5 b4 12. Na4 Qxd4 13. O-O Qxe4 14. Qd2
-Ba6 15. Rfe1 Qd5 16. Qf4 Nbd7 17. Nxc4 Nh5 18. Qc1 Nxg3 19. hxg3 Bb5 20.
-Qc2 Qg5 21. Rad1 Nf6 22. Nd6+ Bxd6 23. Rxd6 O-O 24. Nc5 Rad8 25. Rxd8 Rxd8
-26. Bxb5 cxb5 27. Nd3 Qf5 28. Re3 a5 29. Kf1 Ne4 30. Ke2 Rd4 31. Qc7 Rxd3
-32. Rxd3 Qxf2+ 33. Kd1 Qf1+ 0-1
+1. e4 e6
+{ I'm not terribly familiar with the style of Radjabov, so I don't know if this is his usual opening. }
+2. d4 d5 3. Nc3 Nf6 (3...Bb4 
+{ The Winawer Variation is probably best, though not as easy to play. }) 4. Bg5
+{ threatens e4-e5xf6 }
+ (4. e5 
+{ keeps pieces on the board and avoids ...dxe4 }) 4...Bb4 (4...Be7 
+{ is more common and aims to trade dark-square bishops to ease Black's cramp }) (4...dxe4 
+{ aims to avoid any cramp by bringing pieces into alignment for trading, though White does get at least one very good piece (Ne4 or Bg5) and an easier time castling queen-side, to stir up king-side threats }
+ 5. Nxe4 Be7  (
+{ or Rubinstein's }
+ 5...Nbd7) ) 5. e5 h6 6. Bd2 (6. Bh4 g5 7. exf6 gxh4 
+{ Black seems to equalize a little easier after this as he can win Pf6 in exchange for Ph4. }) 6...Bxc3 (6...Nfd7 7. Qg4 
+{ and White isn't incurring any weaknesses, but is either gaining Bb4 for Nc3 or after ...Bb4-f8 Black is cramped again }
+  (7. Nb5 $5 Bxd2+ 8. Qxd2 a6 9. Na3) ) 7. bxc3 Ne4 8. Qg4
+{ White immediately takes aim at the backward Pg7 & Rh8 and usually Pf7 & Ke8. For the moment Bd2 serves to defend Pc3 and to prevent ...Qd8-g5 (offering a queen trade to end the pressure) . }
+ (
+{ While }
+ 8. h4 
+{ is often useful in the French Defense with this pawn structure, I don't know that it's been tried in this opening on this move. }) 8...g6 9. Bd3 (9. h4 
+{ could take over for Bd2 in guarding g5 and preparing a later attack by f2-f4, h4-h5 or vice versa. It also would allow Rh1 to develop to build the direct frontal threats to Pf7 & Pg6. }
+ 9...c5 10. Bd3 Nxd2 11. Kxd2 Qa5 12. dxc5 Qxc5 13. Ne2 Qxf2 $4 14. Raf1 Qc5 15. Bxg6 fxg6 16. Qxg6+)  (9. Qd1 
+{ Fritz7; Odd! }) 9...Nxd2 10. Kxd2 c5 11. Nf3
+{ This has been considered the main line for many years, but I wonder if White can allow ...c5-c4 and not use more pawns to fight through Black's pawns. }
+ (11. dxc5 
+{ is probably still wrong because of ...Qg5+ }) (11. h4 
+{ still makes sense }) 11...Bd7 (11...c4 $6 
+{ The problem with this is that however much it slows White, it also limits Black's queen-side offensive possibilities. }) (
+{ Prematurely playing }
+ 11...cxd4 
+{ lets White straighten-out his pawns and Black has made no real progress. }
+ 12. cxd4)  (11...Qa5 $5 
+{ Fritz7: with the idea of ...cxd4 }) 12. dxc5 Qe7 13. Rab1 Bc6 14. Nd4 Nd7
+{ These last few moves have been quite unusual for a French Defense, but they make sense; Qe7 defends Pf7 while Bc6 defends Pb7 and Nd7 threatens Pc5 & Pe5. }
+15. Rhe1 (15. Nxc6 bxc6 16. Rb7 Qxc5 17. Qf4 g5 18. Qd4 Qa5 19. Rb2 c5 $11 
+{ Fritz7 }) 15...Nxc5 16. Re3
+{ another way of getting the rook into position, in front of the king-side pawns, to threaten Black's king-side pawns }
+16...h5 17. Qg3 O-O-O
+{ After this it would seem Black's pieces can handle any threats White can generate. However, black might also have ideas of winning. How might he do that? Well, ...Be8, ...Kc8-b8-a8, ...Rd8-c8, ...Nc5-a4 and Pc3 is a target (slow I know) . Another idea is to keep Kd2 from ever escaping to safety by advancing ...h5-h4-h3 to break open the king-side and open the h-file for Black's rooks. }
+ (17...h4 $15 
+{ Fritz7 }) (17...Nxd3 $15 
+{ Fritz7 }) 18. Ke1 Qc7 (18...h4 19. Qg4 Rh5) 19. h4
+{ Anand aims to keep the king-side perfectly safe to ensure a draw. }
+ (19. Qh4 
+{ Fritz7 }) 19...Qa5 20. Kf1 (20. Nxc6 bxc6 21. Kf1 Kd7 20. Qf4 Ke8 $11 
+{ Fritz7 }) 20...Rd7 (
+{ Premature is }
+ 20...Qxa2 21. Ree1 Qa5  (21...Ba4 $11 
+{ Fritz7 })  22. Ra1 Qxc3 23. Nxc6 bxc6 24. Ba6+ $18) 21. Qf4
+{ This general activity is perfect. It threatens Pf7, defends Nd4 and in some cases prepares for Qf4-b4 to attack Kc8. }
+ (21. Ree1 
+{ Fritz7 }) (21. Nxc6 bxc6 22. Ree1 
+{ Fritz7 }) 21...Rhd8
+{ Black is probably wondering why he organized his pieces to only defend light squares. Only Qa5 and Nc5 can get to dark squares and that makes White's task of coordinating much easier. }
+ (21...Qxa2 
+{ still premature }
+ 22. Nxc6 bxc6 23. Qb4 Nb7 24. Ree1)  (21...Qxc3 $4 22. Nxc6 bxc6 23. Ba6+)  (21...Rc7 $14 
+{ Fritz7 }) (21...Na4 $14 
+{ Fritz7 }) 22. Kg1 (22. Nxc6 bxc6 23. Qb4 Qxb4 24. cxb4 d4 25. Ree1 Na4 $11 
+{ Fritz7 }) 22...Nxd3 23. Rxd3 (23. cxd3 Qxc3 24. Rg3 Rc7 $14 
+{ Fritz7 }) 23...Qc5 (23...Qxa2 24. Rdd1 Qc4 $11 
+{ Fritz7 }) 24. Rb4 a5 $2 (24...Rc7 
+{ Mark and Fritz7 agree! }) 25. Rb1 Rc7 26. Qc1 Be8 27. Nb3 (27. Qb2 
+{ If White commits too quickly to the b-file then Black might actually create some play against Ph4 and on the c-file. }
+ 27...Qe7  (27...a4 $11 
+{ Fritz7 })  28. Nf3 Rc4 
+{ possibly preparing ...b5 }) 27...Qb6 (27...Qc4 28. Nxa5 Qxh4 $14 
+{ Fritz7 }) 28. Nd4
+{ Black created the weakness (Pa5) and can't quite defend it, so Anand forces a draw. }
+1/2-1/2
 
 [Event "GBR-ch 58th"]
 [Site "Blackpool"]
@@ -40,6 +99,8 @@ Qc2 Qg5 21. Rad1 Nf6 22. Nd6+ Bxd6 23. Rxd6 O-O 24. Nc5 Rad8 25. Rxd8 Rxd8
 [EventRounds "11"]
 [EventCountry "GBR"]
 
+
+
 1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. Bg5 Ne4 5. Bh4 Bg7 6. e3 c5 7. cxd5 Nxc3 8.
 bxc3 cxd4 9. cxd4 Qxd5 10. Nf3 Nc6 11. Qa4 O-O 12. Qb5 Qe4 13. Be2 e5 14.
 d5 Nb4 15. O-O Nxd5 16. Rac1 a6 17. Qb3 Be6 18. Rc4 Nf4 19. Rxe4 Nxe2+ 20.
@@ -48,6 +109,7 @@ b4 27. e4 fxe4 28. Ng5 Bxg5 29. Bxg5 Rac8 30. Re3 Nd4 31. h4 h6 32. Bxh6
 Nf5 33. Bg5 Nxe3 34. fxe3 Rf8 35. Ra1 Rc3 36. Rxa5 Rxb3 37. Rxe5 Rd3 38.
 Rb5 b3 39. Kg1 Rc8 40. Rb7 Rc2 41. Kh2 b2 42. Bf6 Rdd2 43. Kg3 Rxg2+ 44.
 Kf4 Rcf2+ 45. Ke5 Rg1 46. Rb8+ Kf7 47. Rb7+ Ke8 0-1
+
 
 [Event "GBR-ch 58th"]
 [Site "Blackpool"]
@@ -105,6 +167,7 @@ Qxe4 Ke7 15. Qd3 Qc8 16. Ke2 Qb7 17. Rh2 Nf6 18. Rhh1 Rag8 19. Rhb1 g4
 [EventType "swiss"]
 [EventRounds "11"]
 [EventCountry "GBR"]
+
 
 1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. f3 c6 6. Be3 a6 7. Qd2 b5 8.
 O-O-O Qa5 9. Kb1 Nbd7 10. h4 e5 11. dxe5 dxe5 12. g4 O-O 13. h5 b4 14. Nce2
@@ -224,4 +287,5 @@ Nbd2 Qc7 9. e4 Re8 10. c4 e5 11. d5 c5 12. Qc2 Rf8 13. a3 Ng4 14. Rad1 Qd8
 21. b4 Bd7 22. Rfe1 b6 23. Kh2 Kh8 24. Ng5 f6 25. Ngf3 Rc8 26. bxc5 dxc5
 27. Bc3 Nd6 28. Nd2 Bh6 29. Nhf3 Nf7 30. Re2 Ne8 31. a4 Ned6 32. Ne1 Kg8
 33. Nd3 Qe8 34. Ra1 a6 35. Ree1 b5 36. axb5 axb5 37. cxb5 Bxb5 38. Nb2 f5
-1/2-1/2"""
+1/2-1/2
+"""
