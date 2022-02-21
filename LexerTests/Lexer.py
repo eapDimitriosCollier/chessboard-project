@@ -2,7 +2,7 @@ from enum import Enum,unique
 import re
 
 # Lexer breaks the PGN file in tokens.
-# It additionaly removes comments and Recursive Variation based on the following grammar to feed a cleand token list to the parser.
+# It additionaly removes comments and Recursive Variation and NAGs, based on the following grammar to feed a cleand token list to the parser.
 
 # <recursive-variation> ::= ( <element-sequence> )
 # <element-sequence> ::= <element> <element-sequence>
@@ -65,7 +65,7 @@ class Tables:
                 ("[ \t\r\n\f]"),    #Column 6 - White Space
                 ("\."),             #Column 7 - Period
                 ("[^\[\](){}\"A-Za-z0-9 \t\r\n\f\.]")) #Column 8 - All Other Symbols
-                #Special Symbols ("/*-")
+                
 
 class ErrorHandling(Exception):
     def __init__(self,ErrMessage):
@@ -91,55 +91,81 @@ class Lexer:
 
     def __init__(self,text=None) -> None:
         self.tokens=[]
-        self.index=0
-        self.EOF=False
-        self.BOF=True
+        self._index=0
+        self._EOF=False
+        self._BOF=True
         if text:self.Tokenize(text)
         
     @property
     def GetToken(self)->int:
         return self.tokens[self.index]
+        
+    @property
+    def index(self)->int:
+        return self._index
     
+    @index.setter
+    def index(self,index) -> None:
+            if index<0 or index > len(self.tokens)-1:
+                raise TokenIndexError(index)
+            else:            
+                if index==len(self.tokens)-1:
+                    self._EOF=True
+                    self._BOF=False
+                elif index==0:
+                    self._EOF=False
+                    self._BOF=True
+
+                self._index=index
+
+    @property
+    def EOF(self)->bool:
+        return self._EOF
+
+    @property
+    def BOF(self)->bool:
+        return self._BOF
+
     def MoveNext(self) -> None:
         if self.index<len(self.tokens)-1:            
-            self.index+=1
-            self.EOF=False
-            self.BOF=False
+            self._index+=1
+            self._EOF=False
+            self._BOF=False
         else:
-            self.EOF=True
-            self.BOF=False
+            self._EOF=True
+            self._BOF=False
             
     def MovePrevious(self) -> None:
         if self.index>0:            
-            self.index-=1
-            self.BOF=False
-            self.EOF=False
+            self._index-=1
+            self._BOF=False
+            self._EOF=False
         else:
-            self.EOF=False
-            self.BOF=True
+            self._EOF=False
+            self._BOF=True
 
     def MoveFirst(self) -> None:
-            self.EOF=False
-            self.BOF=True
-            self.index=0
+            self._EOF=False
+            self._BOF=True
+            self._index=0
         
     def MoveLast(self) -> None:
-            self.EOF=True
-            self.BOF=False
-            self.index=len(self.tokens)-1
+            self._EOF=True
+            self._BOF=False
+            self._index=len(self.tokens)-1
 
     def SetPosition(self,index) -> None:
             if index<0 or index > len(self.tokens)-1:
                 raise TokenIndexError(index)
             else:            
                 if index==len(self.tokens)-1:
-                    self.EOF=True
-                    self.BOF=False
+                    self._EOF=True
+                    self._BOF=False
                 elif index==0:
-                    self.EOF=False
-                    self.BOF=True
+                    self._EOF=False
+                    self._BOF=True
 
-                self.index=index
+                self._index=index
 
 
 
@@ -147,8 +173,8 @@ class Lexer:
         Buffer="";pos=0;line=1
         State=STATE.BASE
         self.tokens=[]
-        self.EOF=False
-        self.BOF=True 
+        self._EOF=False
+        self._BOF=True 
         #self.Err=False; self.ErrorLog.clear()
         
         
@@ -201,6 +227,16 @@ class Lexer:
         #second pass to remove comments and recursive annotation
         self.TokenizeExtended()
 
+    def _RemoveNAG(self):
+        self.MoveFirst()
+        while not self.EOF:
+            token=self.GetToken
+            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][:1] == "$":
+                #print(token)
+                self._RemoveToken(self.index)
+                self._index-=1
+            self.MoveNext()
+
     def _insertGameEnd(self):
         self.MoveFirst()
         while not self.EOF:
@@ -223,7 +259,7 @@ class Lexer:
                 if token['token_type']==STATE.COMMENT.name:
                     index=self.index
                     self._RemoveToken(index)
-                    self.index-=1
+                    self._index-=1
                 self.MoveNext()
 
     def _RemoveRecursiveAnnotation(self,MatchState: bool = False, StartingPosition:int = 0,Ret:bool = False )->None:
@@ -248,7 +284,7 @@ class Lexer:
                     #print (token)
                     for i in range(CurrentPos,self.index+1):
                         self._RemoveToken(CurrentPos)
-                    self.index=CurrentPos
+                    self._index=CurrentPos
                     # continues on single matching parenthesis and returns on nested parenthesis
                     if not Ret:
                         Match=False
@@ -285,6 +321,7 @@ class Lexer:
     def TokenizeExtended(self)->None:
         self._RemoveComments()
         self._RemoveRecursiveAnnotation()
+        self._RemoveNAG()
         self._insertGameEnd()
         self.MoveFirst()
 
@@ -300,6 +337,7 @@ if __name__ == '__main__':
     while not Lex.EOF:
         oldToken=token
         token=Lex.GetToken
+        
         print(f"Game Id: {game} -Token Id: {i} --> {token}")
         if token["token_type"]=="EMPTY" and oldToken["token_type"]=='GAME_END':
             i=0;game+=1
