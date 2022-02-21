@@ -112,12 +112,12 @@ class ParseError(Exception):
 
 class SyntaxError(ParseError):
     def __init__(self, tokenIndex: int, line: int, position: int, expected: str, got: str) -> None:
-        self.message = f'SyntaxError on token #{tokenIndex} (Line {line}, Position: {position}). Expected {expected}, got {got}'
+        self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}). Expected {expected}, got {got}'
         super().__init__(self.message)
 
 class LogicError(ParseError):
     def __init__(self, tokenIndex: int, line: int, position: int, errorMessage: str) -> None:
-        self.message = f'LogicError on token #{tokenIndex} (Line {line}, Position: {position}). {errorMessage}'
+        self.message = f'LogicError on token #{tokenIndex} (Line: {line}, Position: {position}). {errorMessage}'
         super().__init__(self.message)
 
 class Parser:
@@ -198,23 +198,24 @@ class Parser:
         self.parseTree.goToParent()
 
     def TagSection(self) -> None:
-        if (self.currentToken()['token_type'] != 'EMPTY'):
+        currentToken = self.currentToken()
+        if (currentToken['token_type'] != 'EMPTY'):
             self.parseTree.insertNode(Node('TagSection'))
             self.TagPair()
 
             self.nextToken() 
             self.TagSection()
-        
-        # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
-        # required Tag Identifiers
-            
-        if (not ParserConstants.REQUIRED_TAG_IDENTIFIERS.issubset(self.usedTagIdentifiers)):
-            raise LogicError(self.Lexer.index, 'Missing required Tags.')                   
-            
-        self.usedTagIdentifiers = set()
+        else:
+            # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
+            # required Tag Identifiers
+                
+            if (not ParserConstants.REQUIRED_TAG_IDENTIFIERS.issubset(self.usedTagIdentifiers)):
+                raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], 'Missing required Tags.')                   
+                
+            self.usedTagIdentifiers = set()
 
-        self.Empty() 
-        self.parseTree.goToParent()
+            self.Empty() 
+            self.parseTree.goToParent()
 
     def TagPair(self) -> None:
         self.parseTree.insertNode(Node('TagPair'))
@@ -233,15 +234,15 @@ class Parser:
 
     def TagName(self) -> None:
         self.expectType('IDENTIFIER')
-        token = self.currentToken()
-        tagIdentifier = token['token_value']
-        self.parseTree.insertNode(Node('TagName', token))
+        currentToken = self.currentToken()
+        tagIdentifier = currentToken['token_value']
+        self.parseTree.insertNode(Node('TagName', currentToken))
         
         if (tagIdentifier in self.usedTagIdentifiers):
-            raise LogicError(self.Lexer.index, f'Tag Identifier {tagIdentifier} has already been used.')
+            raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], f'Tag Identifier {tagIdentifier} has already been used.')
         
         if (tagIdentifier not in ParserConstants.VALID_TAG_IDENTIFIERS):
-            raise LogicError(self.Lexer.index, f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
+            raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
         else:
             self.usedTagIdentifiers.add(tagIdentifier)
 
@@ -284,7 +285,7 @@ class Parser:
         self.expectType('EXPRESSION')
         SANMoveRegEx = r"(..)?([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQ])?(\+|#)?$|^O-O(-O)?"
         if (not re.match(SANMoveRegEx, currentToken['token_value'])):
-            raise ParseError('Invalid move')
+            raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'],  currentToken['token_value'])
 
         self.parseTree.insertNode(Node('SANMove', currentToken))
         self.parseTree.goToParent()
@@ -294,7 +295,7 @@ class Parser:
         self.expectType('EXPRESSION')
         NAGRegEx = r"\$[1-255]"
         if (not re.fullmatch(NAGRegEx, currentToken['token_value'])):
-            raise ParseError('Invalid move')
+            raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'], currentToken['token_value'])
 
         self.parseTree.insertNode(Node('NumericAnnotationGlyph', currentToken))  
         self.parseTree.goToParent()  
