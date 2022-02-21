@@ -204,17 +204,17 @@ class Parser:
 
             self.nextToken() 
             self.TagSection()
-        else:
-            # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
-            # required Tag Identifiers
+        
+        # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
+        # required Tag Identifiers
             
-            if (not ParserConstants.REQUIRED_TAG_IDENTIFIERS.issubset(self.usedTagIdentifiers)):
-                raise LogicError(self.Lexer.index, 'Missing required Tags.')                   
+        if (not ParserConstants.REQUIRED_TAG_IDENTIFIERS.issubset(self.usedTagIdentifiers)):
+            raise LogicError(self.Lexer.index, 'Missing required Tags.')                   
             
-            self.usedTagIdentifiers = set()
+        self.usedTagIdentifiers = set()
 
-            self.Empty() 
-            self.parseTree.goToParent()
+        self.Empty() 
+        self.parseTree.goToParent()
 
     def TagPair(self) -> None:
         self.parseTree.insertNode(Node('TagPair'))
