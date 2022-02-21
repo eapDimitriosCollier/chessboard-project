@@ -121,7 +121,7 @@ class Parser:
         self.currentPos =  0
         self.streamLen = len(self.lexerExpressionList)
         self.parseTree = Tree('Parse Tree',  Node('root'))
-        self.usedTagIdentifiers = []
+        self.usedTagIdentifiers = set()
 
         self.start()
         self.parseTree.showTree()
@@ -209,17 +209,11 @@ class Parser:
         else:
             # Ολοκληρώθηκαν τα TagSection, οπότε κάνουμε έλεγχο αν υπάρχουν τα 
             # required Tag Identifiers
-            requiredTagIdentifiers = []
-            # TODO: Refactor this part. 
-            for tagIdentifier in ParserConstants.VALID_TAG_IDENTIFIERS:
-                if not tagIdentifier['isOptional']:
-                    requiredTagIdentifiers.append(tagIdentifier['tagName'])
             
-            for requiredTagIdentifier in requiredTagIdentifiers:
-                if requiredTagIdentifier not in self.usedTagIdentifiers:
-                    raise LogicError(self.currentPos, 'Missing required Tags.')                   
+            if (not ParserConstants.REQUIRED_TAG_IDENTIFIERS.issubset(self.usedTagIdentifiers)):
+                raise LogicError(self.currentPos, 'Missing required Tags.')                   
             
-            self.usedTagIdentifiers = []
+            self.usedTagIdentifiers = set()
 
             self.Empty() 
             self.parseTree.goToParent()
@@ -251,7 +245,7 @@ class Parser:
         if (tagIdentifier not in ParserConstants.VALID_TAG_IDENTIFIERS):
             raise LogicError(self.currentPos, f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
         else:
-            self.usedTagIdentifiers.append(tagIdentifier)
+            self.usedTagIdentifiers.add(tagIdentifier)
 
         self.parseTree.goToParent()
 
