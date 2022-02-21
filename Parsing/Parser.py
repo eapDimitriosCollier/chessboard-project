@@ -182,8 +182,8 @@ class Parser:
         # ισχύουν οι κανόνες <PGN Game> <PGN Database>
         self.parseTree.insertNode(Node('PGNDatabase'))
         self.PGNGame()
+        self.nextToken() 
         if (not self.Lexer.EOF): 
-            self.nextToken() 
             self.PGNDatabase()
         
         self.parseTree.goToParent() 
