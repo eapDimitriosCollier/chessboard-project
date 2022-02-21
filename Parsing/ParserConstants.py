@@ -1,4 +1,8 @@
-VALID_TAG_IDENTIFIERS = [
+# Θέλουμε set αντί για list ή dict διότι
+# 1. Το κάθε item στην λίστα είναι μοναδικό
+# 2. Κάνουμε μόνο check ύπαρξης tag μέσα σε αυτά τα sets κάτι που τα set κάνουν πιο γρήγορα
+# 3. Δεν μας αφορά η σειρά με την οποία βρίσκονται τα tags.
+VALID_TAG_IDENTIFIERS = {
     'Event',
     'Site',
     'Date',
@@ -39,8 +43,8 @@ VALID_TAG_IDENTIFIERS = [
     'Annotator',
     'Mode',
     'PlyCount'     
-]
-REQUIRED_TAG_IDENTIFIERS = [
+}
+REQUIRED_TAG_IDENTIFIERS = {
     'Event',
     'Site',
     'Date',
@@ -48,4 +52,4 @@ REQUIRED_TAG_IDENTIFIERS = [
     'White',
     'Black',
     'Result',
-]
+}
