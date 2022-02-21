@@ -85,7 +85,8 @@ class Node:
         self.id = Node.count
     
     def showNode(self):
-        print(self.nodeName)     
+        print(self.nodeName)
+        print(self.nodeInfo)   
         for node in self.nodes:
             node.showNode()
 
