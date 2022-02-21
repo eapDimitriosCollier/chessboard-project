@@ -30,7 +30,7 @@ import re
 class Node:
     count = 0
     
-    def __init__(self, nodeName: str = 'root', nodeInfo:dict = None) -> None:
+    def __init__(self, nodeName:str = 'root', nodeInfo:dict = None) -> None:
         Node.count+=1
 
         self.nodeName = nodeName
