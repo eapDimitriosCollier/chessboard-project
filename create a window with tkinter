@@ -1,0 +1,7 @@
+# create a window
+ 
+import tkinter
+ 
+root = tkinter.Tk() # the main class
+ 
+root.mainloop() # windows needs a loop
