@@ -1,3 +1,4 @@
+from typing import Callable
 from Parsing import ParserConstants
 from LexerTests.Lexer import Lexer
 import re
@@ -31,7 +32,7 @@ import re
 class Node:
     count = 0
     
-    def __init__(self, nodeName:str = 'root', nodeInfo:dict = None) -> None:
+    def __init__(self, nodeName: str = 'root', nodeInfo: dict = None) -> None:
         Node.count+=1
 
         self.nodeName = nodeName
@@ -55,9 +56,16 @@ class Node:
             found = node.findNodeById(searchId) 
             if found:
                 return found
+            
+    def postOrderTraversal(self, func: Callable) -> None:
+        currentNode = self
+        for node in self.nodes:
+            node.postOrderTraversal(func)
+
+        func(currentNode)
         
 class Tree:
-    def __init__(self, treeName:str = '', rootNode=None) -> None:
+    def __init__(self, treeName: str = '', rootNode=None) -> None:
         self.treeName = treeName
         self.currentNode = rootNode
         self.rootNode = rootNode
@@ -91,6 +99,12 @@ class Tree:
             self.currentNode = self.grammarMap[nodeName]
         else:
             raise Exception("This grammar node wasn't found")    
+    
+    def goToRoot(self) -> None:
+        self.currentNode = self.rootNode
+    
+    def postOrderTraversal(self, func) -> None:
+        self.rootNode.postOrderTraversal(func)
     
     def findNodeById(self, nodeId: int) -> Node:
         return self.rootNode.findNodeById(nodeId) 
@@ -340,5 +354,14 @@ class Parser:
 
 ## Οι παρακάτω μέθοδοι χτίζουν το AST
     def buildAST(self) -> None:
-        # Iterate through the PGNGames
+        self.parseTree.postOrderTraversal(self.createASTNode)
+    
+    def createASTNode(self, node):
+        # ASTNodeGenerationMap = {
+        #     'PGNGame' : None
+        # }
+        # if node:
+        #    print(node.nodeName) 
         pass
+            
+                         
