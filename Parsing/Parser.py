@@ -27,6 +27,7 @@ import re
 #                        *
 # <empty>:=
 
+## TODO: Make all Exceptions, "UnknownParserError"s
 class Node:
     count = 0
     
@@ -40,30 +41,30 @@ class Node:
         self.id = Node.count
     
     def showNode(self) -> None:
-        print(self.nodeName)
-        print(self.nodeInfo)   
+        print(f'{self.nodeParent.nodeName} -> {self.nodeName}')
+        #print(self.nodeInfo)
+        #print(f'Parent: {self.nodeParent.nodeName}')  
         for node in self.nodes:
             node.showNode()
-
-    def getParent(self) -> 'Node':
-        return self.nodeParent
 
     def findNodeById(self, searchId: int) -> 'Node':
         if (self.id == searchId):
             return self
-        if (self.nodes is not None):
-            for node in self.nodes:
-                return node.findNodeById()
-        raise Exception('Node id not found')
-
+        
+        for node in self.nodes:
+            found = node.findNodeById(searchId) 
+            if found:
+                return found
+        
 class Tree:
-    
     def __init__(self, treeName:str = '', rootNode=None) -> None:
         self.treeName = treeName
         self.currentNode = rootNode
         self.rootNode = rootNode
         self.shouldMark = False
-        self.markedNodeStack = []
+        self.currentMarkingPosition = 0
+        self.markedNodeMap = {}
+        self.grammarMap = {}
     
     def showTree(self) -> None:
         for node in self.rootNode.nodes:
@@ -71,38 +72,54 @@ class Tree:
 
     def insertNode(self, node: Node) -> None:
         assert(isinstance(node, Node))
-        node.nodeParent = self.currentNode
         self.currentNode.nodes.append(node)
+        node.nodeParent = self.currentNode
         self.currentNode = node
 
         if self.shouldMark:
-            self.markedNodeStack.append(node.id)
+            self.markedNodeMap[self.currentMarkingPosition].append(node.id)
 
-    def goToParent(self) -> Node:
-        self.currentNode = self.currentNode.getParent()
-
+    def addReferenceToGrammarMap(self) -> None:
+        self.grammarMap[self.currentNode.nodeName] = self.currentNode
+        
+    def resetGrammarMap(self) -> None:
+        for nodeName in self.grammarMap.keys():
+            self.grammarMap[nodeName] = None
+         
+    def goTo(self, nodeName) -> None:
+        if (nodeName in self.grammarMap):
+            self.currentNode = self.grammarMap[nodeName]
+        else:
+            raise Exception("This grammar node wasn't found")    
+    
     def findNodeById(self, nodeId: int) -> Node:
-        return self.rootNode.findNodeById(nodeId)
-
+        return self.rootNode.findNodeById(nodeId) 
+        
     def removeNode(self, nodeId: int) -> None:
         nodeToRemove = self.findNodeById(nodeId)   
         nodeToRemove.nodeParent.nodes.remove(nodeToRemove)
 
-    def startMarking(self) -> None:
+    def startMarking(self, currentMarkingPosition) -> None:
         self.shouldMark = True
+        self.currentMarkingPosition = currentMarkingPosition
+        self.markedNodeMap[self.currentMarkingPosition] = []
 
     def stopMarking(self) -> None:
         self.shouldMark = False
+        self.currentMarkingPosition = 0
 
     def removeMarkedNodes(self) -> None:
-        for nodeId in self.markedNodeStack:
-            self.removeNode(nodeId)
-
+        if self.markedNodeMap[self.currentMarkingPosition] is not None:
+            self.markedNodeMap[self.currentMarkingPosition].sort(reverse=True)
+            
+            for nodeId in self.markedNodeMap[self.currentMarkingPosition]:
+                self.removeNode(nodeId)
+            
         self.clearMarkedNodeStack()
     
     def clearMarkedNodeStack(self) -> None:
-        self.markedNodeStack = []    
-
+        if (self.currentMarkingPosition in self.markedNodeMap):
+            del self.markedNodeMap[self.currentMarkingPosition]  
 
 # Κλάσεις για διαχείρηση σφαλμάτων
 
@@ -124,11 +141,13 @@ class Parser:
     """Απλή υλοποίηση ενός Recursive Descent Parser"""
     def __init__(self, Lexer: Lexer):
         self.Lexer = Lexer
-        self.parseTree = Tree('Parse Tree',  Node('root'))
         self.usedTagIdentifiers = set()
-
-        self.start()
+        
+        self.parseTree = Tree('Parse Tree',  Node('root'))
+        self.AST = []
+        self.buildParseTree()
         self.parseTree.showTree()
+        self.buildAST()
 
 # Μέθοδοι για το διάβασμα token από τον Lexer
     def nextToken(self) -> None:
@@ -156,7 +175,7 @@ class Parser:
         lastPosition = self.Lexer.index
         for index, func in enumerate(listOfFunctions):
             try:
-                self.parseTree.startMarking()
+                self.parseTree.startMarking(lastPosition)
                 func()
                 self.parseTree.stopMarking()
             except ParseError as e:
@@ -177,32 +196,39 @@ class Parser:
         
 # Μέθοδοι που διέπουν το Recursive Descent μέρος του Parser
 # εφαρμόζοντας την γραμματική στο BNF που βρήκαμε.
-    def start(self) -> None:
+# Οι παρακάτω μέθοδοι χτίζουν το Parse Tree
+    def buildParseTree(self) -> None:
         self.PGNDatabase()
 
     def PGNDatabase(self) -> None:
         self.parseTree.insertNode(Node('PGNDatabase'))
+        self.parseTree.addReferenceToGrammarMap()
         self.PGNGame()
         self.nextToken() 
-        if (not self.Lexer.EOF): 
+        if (not self.Lexer.EOF):
+            self.parseTree.goTo('PGNDatabase')
             self.PGNDatabase()
-        
-        self.parseTree.goToParent() 
+            self.parseTree.resetGrammarMap()
     
     def PGNGame(self) -> None:
         self.parseTree.insertNode(Node('PGNGame'))
+        self.parseTree.addReferenceToGrammarMap()
         self.TagSection()
-
+        
+        self.parseTree.goTo('PGNGame')
+        
         self.nextToken()     
         self.MoveTextSection()
-        self.parseTree.goToParent()
 
     def TagSection(self) -> None:
         currentToken = self.currentToken()
         if (currentToken['token_type'] != 'EMPTY'):
             self.parseTree.insertNode(Node('TagSection'))
+            self.parseTree.addReferenceToGrammarMap()
             self.TagPair()
-
+            
+            self.parseTree.goTo('TagSection')
+            
             self.nextToken() 
             self.TagSection()
         else:
@@ -213,24 +239,24 @@ class Parser:
                 raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], 'Missing required Tags.')                   
                 
             self.usedTagIdentifiers = set()
-
-            self.Empty() 
-            self.parseTree.goToParent()
+            
+            self.parseTree.goTo('TagSection')
+            self.Empty()
 
     def TagPair(self) -> None:
         self.parseTree.insertNode(Node('TagPair'))
+        self.parseTree.addReferenceToGrammarMap()
         self.expectValue('[')
 
         self.nextToken()
         self.TagName()
-
+        self.parseTree.goTo('TagPair')
+        
         self.nextToken()     
         self.TagValue()
 
         self.nextToken()    
         self.expectValue(']')
-
-        self.parseTree.goToParent()
 
     def TagName(self) -> None:
         self.expectType('IDENTIFIER')
@@ -246,75 +272,73 @@ class Parser:
         else:
             self.usedTagIdentifiers.add(tagIdentifier)
 
-        self.parseTree.goToParent()
-
     def TagValue(self) -> None:
         self.expectType('STRING')
         token = self.currentToken()
         self.parseTree.insertNode(Node('TagValue', token))
-        self.parseTree.goToParent()
     
     def MoveTextSection(self) -> None:
         self.parseTree.insertNode(Node('MoveTextSection'))
+        self.parseTree.addReferenceToGrammarMap()
         self.ElementSequence()
+        
+        self.parseTree.goTo('MoveTextSection')
         self.GameTermination()
         self.nextToken()
-        self.parseTree.goToParent()
 
     def ElementSequence(self) -> None:
         currentToken = self.currentToken()
         if (currentToken['token_type'] != 'GAME_END'):
             self.parseTree.insertNode(Node('ElementSequence'))
+            self.parseTree.addReferenceToGrammarMap()
             self.maybe([self.Element, self.RecursiveVariation])
+            
+            self.parseTree.goTo('ElementSequence')
             self.nextToken()
-            self.ElementSequence()
-
-        self.parseTree.goToParent()
+            self.ElementSequence()    
 
     def Element(self) -> None:
+        self.parseTree.insertNode(Node('Element'))
         self.maybe([self.MoveNumberIndication, self.SANMove, self.NumericAnnotationGlyph])
 
     def MoveNumberIndication(self) -> None:
         currentToken = self.currentToken()
         self.expectType('MOVEMENT')
-        self.parseTree.insertNode(Node('Movement', currentToken))
+        self.parseTree.insertNode(Node('MoveNumberIndication', currentToken))
 
     def SANMove(self) -> None:
         currentToken = self.currentToken()
+        self.parseTree.insertNode(Node('SANMove', currentToken))
         # Χρήση RegEx για αναγνώριση κινήσεων.
         self.expectType('EXPRESSION')
         SANMoveRegEx = r"(..)?([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQ])?(\+|#)?$|^O-O(-O)?"
         if (not re.match(SANMoveRegEx, currentToken['token_value'])):
             raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'],  currentToken['token_value'])
 
-        self.parseTree.insertNode(Node('SANMove', currentToken))
-        self.parseTree.goToParent()
-
     def NumericAnnotationGlyph(self) -> None:
         currentToken = self.currentToken()
         self.expectType('EXPRESSION')
+        self.parseTree.insertNode(Node('NumericAnnotationGlyph', currentToken)) 
         NAGRegEx = r"\$[1-255]"
         if (not re.fullmatch(NAGRegEx, currentToken['token_value'])):
             raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'], currentToken['token_value'])
 
-        self.parseTree.insertNode(Node('NumericAnnotationGlyph', currentToken))  
-        self.parseTree.goToParent()  
-
     def RecursiveVariation(self) -> None:
+        self.parseTree.insertNode(Node('RecursiveVariation'))
         self.expectValue("(")
         self.nextToken()
         self.ElementSequence()
         self.nextToken()
-        self.expectValue(")")
-        self.parseTree.goToParent()  
+        self.expectValue(")") 
 
     def GameTermination(self) -> None:
         token = self.currentToken()
-        
         self.parseTree.insertNode(Node('GameTermination', token))
-        self.parseTree.goToParent()
         
-    def Empty(self):
+    def Empty(self) -> None:
         self.parseTree.insertNode(Node('E'))
 
-        self.parseTree.goToParent()
+## Οι παρακάτω μέθοδοι χτίζουν το AST
+    def buildAST(self) -> None:
+        # Iterate through the PGNGames
+        pass
