@@ -1,9 +1,7 @@
 from enum import Enum,unique
 import re
-
 # Lexer breaks the PGN file in tokens.
-# It additionaly removes comments and Recursive Variation and NAGs, based on the following grammar to feed a cleand token list to the parser.
-
+# It additionaly removes comments, NAG moves and Recursive Annotation Variation based on the following grammar so as to feed a clean token list to the parser.
 # <recursive-variation> ::= ( <element-sequence> )
 # <element-sequence> ::= <element> <element-sequence>
 #                        <recursive-variation> <element-sequence>
@@ -23,38 +21,22 @@ class STATE(Enum):
     STRING = 5
     EXPRESSION = 6
     MOVEMENT = 7
-
-     
-@unique
-class ACTION(Enum):
-    TRANSERT = 1       #Transit State and Insert Token
-    TRANSIT = 2        #Transit State only
-    TRANSERTDIS = 3    #Transit State, Insert Token, Discard New Char
-    TRANSERTDIN = 4    #Transit State, Insert Token on New State, Discard Last Char
+    ACCEPTA = 8
+    ACCEPTB = 9
+    ACCEPTC = 10
 
 class Tables:
 
                    #Operator          ,LBrace             ,RBrace             ,Quote              ,Char               ,Num                ,White Space        ,Period             ,Symbol
-    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#BASE_S0
-                  (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.THROWERROR),#OPERATOR_S1
-                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
-                  (STATE.COMMENT      ,STATE.COMMENT      ,STATE.BASE         ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT   ),#COMMENT_S3
-                  (STATE.EXPRESSION   ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.THROWERROR   ,STATE.NUMBER       ,STATE.BASE         ,STATE.MOVEMENT     ,STATE.EXPRESSION),#NUMBER_S4
-                  (STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.BASE         ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING    ),#STRING)_S5
-                  (STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.BASE         ,STATE.EXPRESSION   ,STATE.EXPRESSION),#EXPRESSION_S6
-                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.THROWERROR))#MOVEMENT_S7
-
-    Action_Table=((ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#BASE_S0
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#IDENTIFIER_S2
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSIT     ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSIT  ),#COMMENT_S3
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#OPERATOR_S1
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIN ,ACTION.TRANSIT  ),#NUMBER_S4
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERTDIS ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#STRING_S5
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ),#EXPRESSION_S6
-                  (ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT    ,ACTION.TRANSERT ))#MOVEMENT_S7
-                  
-
-    
+    State_Table= ((STATE.OPERATOR     ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.BASE         ,STATE.EXPRESSION   ,STATE.EXPRESSION),#BASE_S0
+                  (STATE.ACCEPTA      ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.STRING       ,STATE.IDENTIFIER   ,STATE.NUMBER       ,STATE.ACCEPTA      ,STATE.MOVEMENT     ,STATE.THROWERROR),#OPERATOR_S1
+                  (STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.IDENTIFIER   ,STATE.EXPRESSION   ,STATE.ACCEPTA      ,STATE.THROWERROR   ,STATE.EXPRESSION),#IDENTIFIER_S2
+                  (STATE.COMMENT      ,STATE.COMMENT      ,STATE.ACCEPTB      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT      ,STATE.COMMENT   ),#COMMENT_S3
+                  (STATE.ACCEPTA      ,STATE.BASE         ,STATE.BASE         ,STATE.BASE         ,STATE.THROWERROR   ,STATE.NUMBER       ,STATE.ACCEPTA      ,STATE.MOVEMENT     ,STATE.EXPRESSION),#NUMBER_S4
+                  (STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.ACCEPTB      ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING       ,STATE.STRING    ),#STRING)_S5
+                  (STATE.ACCEPTC      ,STATE.COMMENT      ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.EXPRESSION   ,STATE.EXPRESSION   ,STATE.ACCEPTA      ,STATE.EXPRESSION   ,STATE.EXPRESSION),#EXPRESSION_S6
+                  (STATE.OPERATOR     ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.THROWERROR   ,STATE.MOVEMENT     ,STATE.EXPRESSION   ,STATE.ACCEPTA      ,STATE.THROWERROR))#MOVEMENT_S7
+   
     
     SymbolsTbl=(("[\[\]()]"),       #Column 0 - Operator
                 ("{"),              #Column 1 - Right Brace
@@ -170,97 +152,126 @@ class Lexer:
 
 
     def Tokenize(self,txt) -> None:
-        Buffer="";pos=0;line=1
+        Buffer="";pos=0;line=1;BLANKLINE_MARKER=False
         State=STATE.BASE
         self.tokens=[]
         self._EOF=False
         self._BOF=True 
         #self.Err=False; self.ErrorLog.clear()
         
-        
-        for char in txt + " \n":
-            #line+=1 if ord(char)==10 else 0
-            pos+=1
-            Col=0    
+        txt+=" \n\n"
+        for char in (txt):
+            pos+=1;Col=-1    
             for symbol in Tables.SymbolsTbl:
+                Col+=1
                 if (re.match(symbol,char)):
                     NewState=Tables.State_Table[State.value][Col]
-                    Action=Tables.Action_Table[State.value][Col]
-
-                    if NewState==STATE.THROWERROR:
-                        raise LexicalError(line,pos)
                     
-                    if State != NewState:
-                        if Action==ACTION.TRANSERT:
-                            if Buffer.strip():
-                                #print (STATE(State).name,"::",Buffer) #Insert old Buf in token list    
+                    if NewState==STATE.THROWERROR:
+                        raise LexicalError(line,pos)                              
+                    
+                    if NewState!=State:
+                        if NewState.value>=STATE.ACCEPTA.value:
+                            if NewState==STATE.ACCEPTA:
+                                #Update buffer and then Insert Token
+                                #if Buffer:
+                                Buffer=self._UpDateBuffer(Buffer,char.strip())
                                 self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
-                            Buffer=char.strip()                                                            
-                        elif Action==ACTION.TRANSIT:
-                            Buffer+=char
-                        elif Action==ACTION.TRANSERTDIS:
-                            if Buffer.strip():
-                                #print (STATE(State).name,"::",Buffer) #Insert Buf+new char in token list
-                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
+                                Buffer=""
+                                State=STATE.BASE
+                                #break
+                            #Update buffer, Trim first and last char, and then Insert Token (for strings and comments)
+                            elif NewState==STATE.ACCEPTB:
+                                Buffer=self._UpDateBuffer(Buffer,char.strip())
+                                Buffer=Buffer[1:-1]
+                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})                            
+                                Buffer=""
+                                State=STATE.BASE
+                                #break
+                            #when an operator is the last char of an expression without a leading space, insert two tokens
+                            elif NewState==STATE.ACCEPTC:
+                                self.tokens.append({'token_type': STATE(State).name, 'token_value':Buffer, 'Line':line , 'Position':pos})                            
+                                Buffer=char.strip()
+                                NewState=STATE.OPERATOR
+                                self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer, 'Line':line , 'Position':pos})   
+                                Buffer=""
+                                State=STATE.BASE
+                                #break    
+                                              
+                        #as a convention, if there is an immediate ACCEPT on the new State for the same column, then insert token and return to State Zero
+                        elif Tables.State_Table[NewState.value][Col].value==STATE.ACCEPTA.value:
+                            Buffer=self._UpDateBuffer(Buffer,char)
+                            self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
                             Buffer=""
-                        elif Action==ACTION.TRANSERTDIN:
-                            if Buffer.strip():
-                                #print (STATE(NewState).name,"::",Buffer) #Insert Buf+new char in token list
-                                self.tokens.append({'token_type': STATE(NewState).name, 'token_value':Buffer, 'Line':line , 'Position':pos})
-                            Buffer=""
-                    else:
-                        #add only one EMPTY token on multiple blank lines
-                        if ord(char)==10 and len(self.tokens)>1 and self.tokens[-1]['token_type']!='EMPTY': 
-                            if ( len(Buffer)>=1 and not Buffer.strip() ) or pos==1:
-                                self.tokens.append({'token_type': "EMPTY", 'token_value':None, 'Line':line , 'Position':pos})
+                            State=STATE.BASE
+                            #break
                         else:
-                            Buffer+=char 
-                        
-                    State=NewState
-                    break
-                Col+=1
-            #Increment line on line feed character
-            if ord(char)==10:
-                pos=0
-                line+=1
+                            Buffer=self._UpDateBuffer(Buffer,char)
+                            State=NewState
+                            #break;
+                    
+                    else:
+                        Buffer=self._UpDateBuffer(Buffer,char) 
+                        State=NewState
 
-        #second pass to remove comments and recursive annotation
-        self.TokenizeExtended()
+                    #increase line count and insert an EMPTY token when there are at least two consequent line feed characters                       
+                    if ord(char)==10:
+                        pos=0
+                        line+=1
+                        if not BLANKLINE_MARKER:
+                            BLANKLINE_MARKER=True
+                        elif BLANKLINE_MARKER:
+                            if len(self.tokens)>1 and self.tokens[-1]['token_type']!='EMPTY':
+                                self.tokens.append({'token_type': "EMPTY", 'token_value':None, 'Line':line , 'Position':pos})
+                            BLANKLINE_MARKER=False
+                    else:
+                        BLANKLINE_MARKER=False
 
-    def _RemoveNAG(self):
+        #second pass to remove comments, NAG moves and recursive annotation
+        self.Evaluator()
+
+
+
+    def _UpDateBuffer(self,Buffer,char) -> str:
+        if Buffer.strip():
+            Buffer+=char
+        else:
+            Buffer=char
+
+        return Buffer
+
+    def _FixRemoveSpecialTokens(self)->None:
         self.MoveFirst()
+        game_termination= ('1-0','0-1','1/2-1/2','*')
         while not self.EOF:
             token=self.GetToken
-            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][:1] == "$":
-                #print(token)
-                self._RemoveToken(self.index)
-                self._index-=1
-            self.MoveNext()
+            #remove period from movement
+            if token['token_type']==STATE.MOVEMENT.name:
+                token['token_value']=(token['token_value'])[:-1]
 
-    def _insertGameEnd(self):
-        self.MoveFirst()
-        while not self.EOF:
-            token=self.GetToken
-            game_termination= ('1-0','0-1','1/2-1/2','*')
+            #remove double period from expressions
+            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][0:2]=="..":
+                token['token_value']=(token['token_value'])[2:]
+
+            #insert game termination                                    
             if token['token_type']==STATE.EXPRESSION.name and token['token_value'] in game_termination:
                 self.tokens[self.index]['token_type']="GAME_END"
-            self.MoveNext()
 
-    def _RemoveComments(self,token=None)->None:
-        if token:
+            #remove NAG
+            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][:1] == "$":
+                self._RemoveToken(self.index)
+                self.index-=1
+                continue
+
+            #remove comments
             if token['token_type']==STATE.COMMENT.name:
-                index=self.index
-                self._RemoveToken(index)
-                self.MovePrevious()
-        else:
-            self.MoveFirst()
-            while not self.EOF:
-                token=self.GetToken
-                if token['token_type']==STATE.COMMENT.name:
-                    index=self.index
-                    self._RemoveToken(index)
-                    self._index-=1
-                self.MoveNext()
+                self._RemoveToken(self.index)
+                self.index-=1
+                continue
+
+            self.MoveNext()
+        self.MoveFirst()
+
 
     def _RemoveRecursiveAnnotation(self,MatchState: bool = False, StartingPosition:int = 0,Ret:bool = False )->None:
         if not StartingPosition:
@@ -298,7 +309,8 @@ class Lexer:
                     self._RemoveRecursiveAnnotation(MatchState=True,StartingPosition=self.index-1,Ret=True)
                     continue
             self.MoveNext()
-            
+
+        self.MoveFirst()
 
     def _checkLParenthesis(self,token)->bool:
         if token['token_type']==STATE.OPERATOR.name and token['token_value']=="(":
@@ -318,12 +330,10 @@ class Lexer:
         except Exception as e:
             print (e)
 
-    def TokenizeExtended(self)->None:
-        self._RemoveComments()
+    def Evaluator(self)->None:
+        self._FixRemoveSpecialTokens()
         self._RemoveRecursiveAnnotation()
-        self._RemoveNAG()
-        self._insertGameEnd()
-        self.MoveFirst()
+
 
 
 if __name__ == '__main__':
