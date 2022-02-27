@@ -1,5 +1,5 @@
-from Parsing.AbstractSyntaxTreeBuilder.AbstractSyntaxTreeBuilder import AbstractSyntaxTreeBuilder
-from Parsing.ParseTreeBuilder.ParseTreeBuilder import ParseTreeBuilder
+from Parser.AbstractSyntaxTreeBuilder.AbstractSyntaxTreeBuilder import AbstractSyntaxTreeBuilder
+from Parser.ParseTreeBuilder.ParseTreeBuilder import ParseTreeBuilder
 from LexerTests.Lexer import Lexer
 
 class Parser:

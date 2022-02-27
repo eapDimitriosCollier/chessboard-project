@@ -1,4 +1,4 @@
-from Parsing.Tree.Node import Node
+from Parser.Tree.Node import Node
 
 class Tree:
     def __init__(self) -> None:

@@ -1,5 +1,5 @@
-from Parsing.ParseTree.ParseNode import ParseNode
-from Parsing.ParseTree.ParseTree import ParseTree
+from Parser.ParseTree.ParseNode import ParseNode
+from Parser.ParseTree.ParseTree import ParseTree
 
 class AbstractSyntaxTreeBuilder:
     def __init__(self, parseTree: ParseTree) -> None:

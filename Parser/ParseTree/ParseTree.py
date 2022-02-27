@@ -1,5 +1,5 @@
-from Parsing.Tree.Tree import Tree
-from Parsing.ParseTree.ParseNode import ParseNode
+from Parser.Tree.Tree import Tree
+from Parser.ParseTree.ParseNode import ParseNode
 
 class ParseTree(Tree):
     def __init__(self) -> None:

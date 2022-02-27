@@ -1,4 +1,4 @@
-from Parsing.Tree.Node import Node
+from Parser.Tree.Node import Node
 from typing import Callable
 
 class ParseNode(Node):

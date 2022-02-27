@@ -1,6 +1,6 @@
-from Parsing.ParseTree.ParseNode import ParseNode
-from Parsing.ParseTree.ParseTree import ParseTree
-from Parsing import ParserConstants
+from Parser.ParseTree.ParseNode import ParseNode
+from Parser.ParseTree.ParseTree import ParseTree
+from Parser import ParserConstants
 from LexerTests.Lexer import Lexer
 import re
 
