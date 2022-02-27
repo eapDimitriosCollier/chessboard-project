@@ -1,3 +1,4 @@
+from Parsing.AbstractSyntaxTreeBuilder.AbstractSyntaxTreeBuilder import AbstractSyntaxTreeBuilder
 from Parsing.ParseTreeBuilder.ParseTreeBuilder import ParseTreeBuilder
 from LexerTests.Lexer import Lexer
 
@@ -6,7 +7,11 @@ class Parser:
         self.parseTreeBuilder = ParseTreeBuilder(Lexer)
         self.parseTreeBuilder.build()
         self.parseTree = self.parseTreeBuilder.getParseTree()
-        self.parseTree.showTree()
+        self.ASTBuilder = AbstractSyntaxTreeBuilder(self.parseTree)
+        self.ASTBuilder.build()
+        print(self.ASTBuilder.getAST())
+        
+        
         
         
         
