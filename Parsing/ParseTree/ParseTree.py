@@ -2,8 +2,8 @@ from Parsing.Tree.Tree import Tree
 from Parsing.ParseTree.ParseNode import ParseNode
 
 class ParseTree(Tree):
-    def __init__(self, rootNode) -> None:
-        super().__init__(rootNode)
+    def __init__(self) -> None:
+        super().__init__()
         
         self.shouldMark = False
         self.currentMarkingPosition = 0

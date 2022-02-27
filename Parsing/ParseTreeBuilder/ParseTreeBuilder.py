@@ -1,9 +1,11 @@
-from Parsing.ParseTree.ParseTree import ParseTree, ParseNode
+from Parsing.ParseTree.ParseNode import ParseNode
+from Parsing.ParseTree.ParseTree import ParseTree
 from Parsing import ParserConstants
 from LexerTests.Lexer import Lexer
 import re
 
 ## Η γραμματική του PGN εκφρασμένη σε BNF. 
+#TODO: Add source
 ## Την γραμματική την βρήκαμε στο 
 
 # <PGN-database>:= <PGN-game> <PGN-database>
@@ -112,8 +114,7 @@ class ParseTreeBuilder:
 # εφαρμόζοντας την γραμματική στο BNF που βρήκαμε.
 # Οι παρακάτω μέθοδοι χτίζουν το Parse Tree
     def build(self) -> None:
-        self.parseTree = ParseTree(ParseNode('root'))
-        self.parseTree.addReferenceToGrammarMap()
+        self.parseTree = ParseTree()
         self.PGNDatabase()
 
     def PGNDatabase(self) -> None:

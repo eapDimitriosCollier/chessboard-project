@@ -1,9 +1,9 @@
 from Parsing.Tree.Node import Node
 
 class Tree:
-    def __init__(self, rootNode=None) -> None:
-        self.currentNode = rootNode
-        self.rootNode = rootNode      
+    def __init__(self) -> None:
+        self.currentNode = None
+        self.rootNode = None      
 
     def showTree(self) -> None:
         for node in self.rootNode.nodes:
@@ -11,8 +11,12 @@ class Tree:
             
     def insertNode(self, node: Node) -> None:
         assert(isinstance(node, Node))
-        self.currentNode.nodes.append(node)
-        node.nodeParent = self.currentNode
+        if self.rootNode is None:
+            self.rootNode = node
+        else:
+            self.currentNode.nodes.append(node)
+            node.nodeParent = self.currentNode
+            
         self.currentNode = node
 
     def findNodeById(self, nodeId: int) -> Node:
