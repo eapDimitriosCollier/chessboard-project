@@ -11,7 +11,7 @@ txt="""
 [ECO "C12"]
 [PlyCount "55"]
 [Annotator "Hathaway"]
-
+[cccc "sdfsdfs" ]
 1. e4 e6
 { I'm not terribly familiar with the style of Radjabov, so I don't know if this is his usual opening. }
 2. d4 d5 3. Nc3 Nf6 (3...Bb4 

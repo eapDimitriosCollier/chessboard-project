@@ -250,21 +250,21 @@ class Lexer:
                 token['token_value']=(token['token_value'])[:-1]
 
             #remove double period from expressions
-            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][0:2]=="..":
+            elif token['token_type']==STATE.EXPRESSION.name and token['token_value'][0:2]=="..":
                 token['token_value']=(token['token_value'])[2:]
 
             #insert game termination                                    
-            if token['token_type']==STATE.EXPRESSION.name and token['token_value'] in game_termination:
+            elif token['token_type']==STATE.EXPRESSION.name and token['token_value'] in game_termination:
                 self.tokens[self.index]['token_type']="GAME_END"
 
             #remove NAG
-            if token['token_type']==STATE.EXPRESSION.name and token['token_value'][:1] == "$":
+            elif token['token_type']==STATE.EXPRESSION.name and token['token_value'][:1] == "$":
                 self._RemoveToken(self.index)
                 self.index-=1
                 continue
 
             #remove comments
-            if token['token_type']==STATE.COMMENT.name:
+            elif token['token_type']==STATE.COMMENT.name:
                 self._RemoveToken(self.index)
                 self.index-=1
                 continue
@@ -272,7 +272,10 @@ class Lexer:
             self.MoveNext()
         self.MoveFirst()
 
-
+    #loop through all tokens to find and remove the parenthesis that denotes a recursive annotation sequence
+    #if a nested parenthesis is found then call the method recursively until
+    #the last matching parenthesis is found
+    #a parenthesis is evaluated only if it's a discrete operator type token
     def _RemoveRecursiveAnnotation(self,MatchState: bool = False, StartingPosition:int = 0,Ret:bool = False )->None:
         if not StartingPosition:
             self.MoveFirst()
