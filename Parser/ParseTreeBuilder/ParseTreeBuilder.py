@@ -1,7 +1,7 @@
 from Parser.ParseTree.ParseNode import ParseNode
 from Parser.ParseTree.ParseTree import ParseTree
 from Parser import ParserConstants
-from LexerTests.Lexer import Lexer
+from Lexer.Lexer import Lexer
 import re
 
 ## Η γραμματική του PGN εκφρασμένη σε BNF. 

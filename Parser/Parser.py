@@ -1,6 +1,6 @@
 from Parser.AbstractSyntaxTreeBuilder.AbstractSyntaxTreeBuilder import AbstractSyntaxTreeBuilder
 from Parser.ParseTreeBuilder.ParseTreeBuilder import ParseTreeBuilder
-from LexerTests.Lexer import Lexer
+from Lexer.Lexer import Lexer
 
 class Parser:
     def __init__(self, Lexer: Lexer) -> None:
