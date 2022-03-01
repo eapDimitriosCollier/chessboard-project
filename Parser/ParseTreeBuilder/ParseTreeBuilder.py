@@ -41,8 +41,12 @@ class ParseError(Exception):
         super().__init__(f'ParseError: {message}')
 
 class SyntaxError(ParseError):
-    def __init__(self, tokenIndex: int, line: int, position: int, expected: str, got: str) -> None:
-        self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}). Expected {expected}, got {got}'
+    def __init__(self, tokenIndex: int, line: int, position: int, expected: str = '', got: str = '') -> None:
+        if expected and got: 
+            self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}). Expected {expected}, got {got}'
+        else:
+            self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}).'
+            
         super().__init__(self.message)
 
 class LogicError(ParseError):
@@ -92,19 +96,18 @@ class ParseTreeBuilder:
                 productionRule()
                 self.parseTree.stopMarking()
             except ParseError as e:
-                # Πρώτα διαγράφουμε όλα τα marked nodes
-                self.parseTree.removeMarkedNodes()
-
                 # Αν είμαστε στον τελευταίο κανόνα, σημαίνει ότι όλα τα προηγούμενα έχουν αποτύχει.
                 # Εφόσον αποτύχει και το τελευταίο, πετάμε το τελευταίο ParseError που πήραμε.
                 if index == len(possibleProductionRules) - 1:
                     raise e
-
+                
+                # Πρώτα διαγράφουμε όλα τα marked nodes
+                self.parseTree.removeMarkedNodes(lastPosition)
                 self.Lexer.index = lastPosition
                 continue     
             else:
                 # Αν εκτελεστεί το παραπάνω χωρίς ParseError, τότε, απλά φεύγουμε απ'την επανάληψη
-                self.parseTree.clearMarkedNodeStack()
+                self.parseTree.clearMarkedNodeStack(lastPosition)
                 break
     
     def getParseTree(self) -> ParseTree:
@@ -204,6 +207,7 @@ class ParseTreeBuilder:
         self.nextToken()
 
     def ElementSequence(self) -> None:
+        
         currentToken = self.currentToken()
         if (currentToken['token_type'] != 'GAME_END'):
             self.parseTree.insertNode(ParseNode('ElementSequence'))
@@ -228,9 +232,9 @@ class ParseTreeBuilder:
         self.parseTree.insertNode(ParseNode('SANMove', currentToken))
         # Χρήση RegEx για αναγνώριση κινήσεων.
         self.expectType('EXPRESSION')
-        SANMoveRegEx = r"(..)?([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQ])?(\+|#)?$|^O-O(-O)?"
+        SANMoveRegEx = r"(..)?([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQK])?(\+|#)?$|^O-O(-O)?"
         if (not re.match(SANMoveRegEx, currentToken['token_value'])):
-            raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'],  currentToken['token_value'])
+            raise SyntaxError('Invalid move', currentToken['Line'], currentToken['Position'],  currentToken['token_value'])
 
     def NumericAnnotationGlyph(self) -> None:
         currentToken = self.currentToken()
@@ -238,7 +242,7 @@ class ParseTreeBuilder:
         self.parseTree.insertNode(ParseNode('NumericAnnotationGlyph', currentToken)) 
         NAGRegEx = r"\$[1-255]"
         if (not re.fullmatch(NAGRegEx, currentToken['token_value'])):
-            raise ParseError('Invalid move', currentToken['Line'], currentToken['Position'], currentToken['token_value'])
+            raise SyntaxError('Invalid NAG', currentToken['Line'], currentToken['Position'], currentToken['token_value'])
 
     def RecursiveVariation(self) -> None:
         self.parseTree.insertNode(ParseNode('RecursiveVariation'))

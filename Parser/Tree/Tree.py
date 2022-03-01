@@ -23,5 +23,6 @@ class Tree:
         return self.rootNode.findNodeById(nodeId) 
         
     def removeNode(self, nodeId: int) -> None:
-        nodeToRemove = self.findNodeById(nodeId)   
-        nodeToRemove.nodeParent.nodes.remove(nodeToRemove)
+        nodeToRemove = self.findNodeById(nodeId)
+        if nodeToRemove:
+            nodeToRemove.nodeParent.nodes.remove(nodeToRemove)

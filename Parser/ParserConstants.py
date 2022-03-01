@@ -42,13 +42,14 @@ VALID_TAG_IDENTIFIERS = {
     'Termination',
     'Annotator',
     'Mode',
-    'PlyCount'     
-}
+    'PlyCount',
+    'WhiteRatingDiff',
+    'BlackRatingDiff',
+    'Variant'
+} 
 REQUIRED_TAG_IDENTIFIERS = {
     'Event',
     'Site',
-    'Date',
-    'Round',
     'White',
     'Black',
     'Result',

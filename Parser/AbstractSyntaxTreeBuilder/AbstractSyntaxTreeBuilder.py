@@ -87,30 +87,35 @@ class AbstractSyntaxTreeBuilder:
     def MoveTextSection(self, parseNode):
         elementSequence = None
         gameTermination = None
+        isEmpty = False
         
         for node in parseNode.nodes:
             if node.nodeName == 'ElementSequence' : elementSequence = node.ASTNode
-            elif node.nodeName == 'GameTermination' : gameTermination = node.ASTNode
-        
-        # Ξεχωρίζουμε τα actions σε white/black.
-        movementSection = []
-        currentMoveId = 0
-        isWhitesTurn = True
-        for element in elementSequence:
-            if 'moveId' in element:
-                if (currentMoveId != element['moveId']):
-                    currentMoveId = element['moveId']
-                    movementSection.append({'moveId': currentMoveId})
-                continue
+            elif node.nodeName == 'GameTermination' : gameTermination = node.ASTNode            
             
-            if isWhitesTurn:
-                movementSection[int(currentMoveId) - 1]['whiteActions'] = element
-                isWhitesTurn = False
-            else:
-                movementSection[int(currentMoveId) - 1]['blackActions'] = element
-                isWhitesTurn = True
-        
-        parseNode.ASTNode = {"MovementSection": movementSection, "GameTermination": gameTermination}        
+        if elementSequence:
+            # Ξεχωρίζουμε τα actions σε white/black.
+            movementSection = []
+            currentMoveId = 0
+            isWhitesTurn = True
+            for element in elementSequence:
+                if 'moveId' in element:
+                    if (currentMoveId != element['moveId']):
+                        currentMoveId = element['moveId']
+                        movementSection.append({'moveId': currentMoveId})
+                    continue
+                
+                if isWhitesTurn:
+                    movementSection[int(currentMoveId) - 1]['whiteActions'] = element
+                    isWhitesTurn = False
+                else:
+                    movementSection[int(currentMoveId) - 1]['blackActions'] = element
+                    isWhitesTurn = True
+            
+            parseNode.ASTNode = {"MovementSection": movementSection, "GameTermination": gameTermination}
+        else:
+            parseNode.ASTNode = {"GameTermination": gameTermination}
+                        
         
     def GameTermination(self, parseNode):
         token = parseNode.nodeInfo
@@ -177,7 +182,7 @@ class AbstractSyntaxTreeBuilder:
         else:
             actionStack.append('Movement')
             if '=' in sanMove:
-                actionStack.append('Promotion')        
+                actionStack.append('Promotion')
         
         if '+' == sanMove[-1]:
             actionStack.append('Check')
@@ -276,17 +281,16 @@ class AbstractSyntaxTreeBuilder:
     def extractPiece(self, sanMove) -> str:
         piece = "Pawn"
         
-        match sanMove[0]:
-            case 'K':
-                piece = "King"
-            case 'Q':
-                piece = "Queen"
-            case 'R':
-                piece = "Rook"
-            case 'B':
-                piece = "Bishop"
-            case 'N':
-                piece = "Knight"
+        if sanMove[0] == 'K':
+            piece = "King"
+        elif sanMove[0] == 'Q':
+            piece = "Queen"
+        elif sanMove[0] == 'R':
+            piece = "Rook"
+        elif sanMove[0] == 'B':
+            piece = "Bishop"
+        elif sanMove[0] == 'N':
+            piece = "Knight"
                 
         return piece
                  

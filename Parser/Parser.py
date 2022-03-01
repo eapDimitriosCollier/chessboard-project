@@ -4,12 +4,21 @@ from Lexer.Lexer import Lexer
 
 class Parser:
     def __init__(self, Lexer: Lexer) -> None:
-        self.parseTreeBuilder = ParseTreeBuilder(Lexer)
-        self.parseTreeBuilder.build()
-        self.parseTree = self.parseTreeBuilder.getParseTree()
-        self.ASTBuilder = AbstractSyntaxTreeBuilder(self.parseTree)
-        self.ASTBuilder.build()
-        print(self.ASTBuilder.getAST())
+        
+        # Δημιουργία Parse Tree
+        parseTreeBuilder = ParseTreeBuilder(Lexer)
+        parseTreeBuilder.build()
+       
+        
+        # Δημιουργία AST
+        parseTree = parseTreeBuilder.getParseTree()
+        ASTBuilder = AbstractSyntaxTreeBuilder(parseTree)
+        ASTBuilder.build()
+        
+        self._AST = ASTBuilder.getAST()
+        
+    def getParsingResult(self):
+        return self._AST    
         
         
         

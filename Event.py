@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
-from EventListener import EventListener
 
 class Event(ABC):
     @abstractmethod
-    def subscribe(self, eventListener: EventListener):
+    def subscribe(self, eventListener):
         pass
     
     @abstractmethod
-    def unsubscribe(self, eventListener: EventListener):
+    def unsubscribe(self, eventListener):
         pass
     
     @abstractmethod

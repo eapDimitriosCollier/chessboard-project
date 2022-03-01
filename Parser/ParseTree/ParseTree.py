@@ -15,7 +15,7 @@ class ParseTree(Tree):
         super().insertNode(node)
         
         if self.shouldMark:
-            self.markedNodeMap[self.currentMarkingPosition].append(node.id)
+            self.markedNodeMap[self.currentMarkingPosition] = node.id
     
     def addReferenceToGrammarMap(self) -> None:
         self.grammarMap[self.currentNode.nodeName] = self.currentNode
@@ -36,23 +36,19 @@ class ParseTree(Tree):
     def startMarking(self, currentMarkingPosition) -> None:
         self.shouldMark = True
         self.currentMarkingPosition = currentMarkingPosition
-        self.markedNodeMap[self.currentMarkingPosition] = []
+        self.markedNodeMap[self.currentMarkingPosition] = ''
 
     def stopMarking(self) -> None:
         self.shouldMark = False
         self.currentMarkingPosition = 0
 
-    def removeMarkedNodes(self) -> None:
-        if self.markedNodeMap[self.currentMarkingPosition] is not None:
-            self.markedNodeMap[self.currentMarkingPosition].sort(reverse=True)
+    def removeMarkedNodes(self, lastPosition) -> None:
+        if self.markedNodeMap[lastPosition]:
+            self.removeNode(self.markedNodeMap[lastPosition])
             
-            for nodeId in self.markedNodeMap[self.currentMarkingPosition]:
-                self.removeNode(nodeId)
-            
-        self.clearMarkedNodeStack()
+        self.clearMarkedNodeStack(lastPosition)
     
-    def clearMarkedNodeStack(self) -> None:
-        if (self.currentMarkingPosition in self.markedNodeMap):
-            del self.markedNodeMap[self.currentMarkingPosition]  
-        
+    def clearMarkedNodeStack(self, lastPosition) -> None:
+        if (lastPosition in self.markedNodeMap):
+            self.markedNodeMap.pop(lastPosition)
       
