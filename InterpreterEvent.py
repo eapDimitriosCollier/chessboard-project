@@ -1,5 +1,5 @@
-from EventListener import EventListener
-from Event import Event
+from EventListener.EventListener import EventListener
+from Event.Event import Event
 
 class InterpreterEvent(Event):
     _eventListeners: list = []

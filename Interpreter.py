@@ -3,31 +3,31 @@ from Parser.Parser import Parser
 from InterpreterEvent import InterpreterEvent
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
-from Event import Event
-from EventListener import EventListener
+from RequestListener.RequestListener import RequestListener
 from threading import Thread
 
-
-class Interpreter(EventListener):
-    def __init__(self, interpreterEvent: InterpreterEvent, interpreterResponse: InterpreterResponse, rawPGN):
+class Interpreter(RequestListener):
+    def __init__(self, rawPGN):
         self.parsingResult = None
-        self.interpreterEvent = interpreterEvent
-        self.interpreterResponse = interpreterResponse
         
         interpreterThread = Thread(target=self.start, args=(rawPGN,))
         interpreterThread.start()
                   
     def start(self, rawPGN):
-        self.interpreterEvent.startInterpretation()
+        InterpreterEvent().startInterpretation()
         parser = Parser(Lexer(rawPGN))
         self.parsingResult = parser.getParsingResult()
         print(self.parsingResult)
-        self.interpreterEvent.endInterpretation()
+        InterpreterEvent().endInterpretation()
+        
+        # Τώρα που ολοκληρώθηκε το interpretation, ξεκινάμε να ακούμε σε requests
+        # από το GUI.
+        GUIRequest().subscribe(self)
     
-    def onEvent(self, event: Event):
+    def onRequest(self, event: GUIRequest):
         if (isinstance(event, GUIRequest)):
             if (event._request == "GET_GAMES"):
-                self.interpreterResponse.sendResponse('INTERPRETER SAID HI')
+                InterpreterResponse().sendResponse(event, 'INTERPRETER SAID HI')
         
         
     

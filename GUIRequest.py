@@ -1,21 +1,6 @@
-from EventListener import EventListener
-from Event import Event
+from Request.Request import Request
 
-class GUIRequest(Event):
-    _eventListeners: list = []
-
-    _request: str = ''
-    _args: list = []
-    
-    def subscribe(self, eventListener: EventListener) -> None:
-        GUIRequest._eventListeners.append(eventListener)
-    
-    def unsubscribe(self, eventListener: EventListener) -> None:
-        GUIRequest._eventListeners.remove(eventListener)
-        
-    def dispatch(self) -> None:
-        for eventListener in GUIRequest._eventListeners:
-            eventListener.onEvent(self)
+class GUIRequest(Request):
     
     def getGames(self):
         self._request = "GET_GAMES"
@@ -24,5 +9,15 @@ class GUIRequest(Event):
 
     def getTags(self, gameUUID):
         self._request = "GET_TAGS"
+        self._args = gameUUID
+        self.dispatch()
+    
+    def getMoves(self, gameUUID):
+        self._request = "GET_MOVES"
+        self._args = gameUUID
+        self.dispatch()
+        
+    def getNextMove(self, gameUUID):
+        self._request = "GET_NEXT_MOVE"
         self._args = gameUUID
         self.dispatch()

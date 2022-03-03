@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from Event import Event
+from Event.Event import Event
 
 class EventListener(ABC):
     @abstractmethod
