@@ -115,8 +115,7 @@ class AbstractSyntaxTreeBuilder:
             parseNode.ASTNode = {"MovementSection": movementSection, "GameTermination": gameTermination}
         else:
             parseNode.ASTNode = {"GameTermination": gameTermination}
-                        
-        
+                                
     def GameTermination(self, parseNode):
         token = parseNode.nodeInfo
         parseNode.ASTNode = token['token_value']

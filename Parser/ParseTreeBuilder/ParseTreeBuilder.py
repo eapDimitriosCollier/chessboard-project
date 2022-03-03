@@ -62,6 +62,7 @@ class ParseTreeBuilder:
         self.parseTree = None
 
 # Μέθοδοι για το διάβασμα token από τον Lexer
+# TODO: Add "Unexpected end of file exception"
     def nextToken(self) -> None:
         self.Lexer.MoveNext()
         token = self.Lexer.GetToken
@@ -118,18 +119,17 @@ class ParseTreeBuilder:
 # Οι παρακάτω μέθοδοι χτίζουν το Parse Tree
     def build(self) -> None:
         self.parseTree = ParseTree()
-        self.PGNDatabase()
+        while (not self.Lexer.EOF):
+            self.PGNDatabase()
+            self.parseTree.goTo('PGNDatabase')
+            self.parseTree.resetGrammarMap()
 
     def PGNDatabase(self) -> None:
         self.parseTree.insertNode(ParseNode('PGNDatabase'))
         self.parseTree.addReferenceToGrammarMap()
         self.PGNGame()
-        self.nextToken() 
-        if (not self.Lexer.EOF):
-            self.parseTree.goTo('PGNDatabase')
-            self.PGNDatabase()
-            self.parseTree.resetGrammarMap()
-    
+        self.nextToken()
+
     def PGNGame(self) -> None:
         self.parseTree.insertNode(ParseNode('PGNGame'))
         self.parseTree.addReferenceToGrammarMap()
