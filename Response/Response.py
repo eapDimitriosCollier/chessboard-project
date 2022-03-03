@@ -18,13 +18,18 @@ class Response():
         for requestListener in self._requestListeners:
             requestListener.onResponse(self)
     
+    def dispatchError(self) -> None:
+        for requestListener in self._requestListeners:
+            requestListener.onErrorResponse(self)
+    
     def sendResponse(self, request: Request, response):
         self._request = request
         self._response = response
         self.dispatch()
     
-    def sendErrorResponse(self) -> None:
-        for requestListener in self._requestListeners:
-            requestListener.onErrorResponse(self)            
+    def sendErrorResponse(self, request: Request, response) -> None:
+        self._request = request
+        self._response = response
+        self.dispatchError()        
         
         

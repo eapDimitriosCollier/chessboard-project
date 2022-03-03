@@ -36,7 +36,7 @@ class Application(EventListener, ResponseListener):
         # Initialize events
         InterpreterEvent().subscribe(self)
         self.interpreter = Interpreter(txt)
-    
+              
     def guiGetGames(self):
         GUIRequest().getGames()
         
@@ -46,11 +46,15 @@ class Application(EventListener, ResponseListener):
             # κάθε onEvent να υπάρχουν event handler methods για κάθε event. 
             self.interpreterEventHandler(event)
     
+    def onErrorEvent(self, event: Event):
+        if (isinstance(event, InterpreterEvent)):
+            print(event._details)
+    
     def interpreterEventHandler(self, event):
-        if (event._state == "START_INTERPRETATION"):
+        if (event._flag == "START_INTERPRETATION"):
             print("Interpretation started")
             # Loading window...
-        elif (event._state == "END_INTERPRETATION"):
+        elif (event._flag == "END_INTERPRETATION"):
             # Stop loading window...
             print("Interpretation ended")
             # Όταν τελειώσει το interpretion αρχίζουμε να "ακούμε" σε 

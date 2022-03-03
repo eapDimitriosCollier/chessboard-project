@@ -12,3 +12,7 @@ class Event(ABC):
     @abstractmethod
     def dispatch(self):
         pass
+    
+    @abstractmethod
+    def dispatchError(self):
+        pass
