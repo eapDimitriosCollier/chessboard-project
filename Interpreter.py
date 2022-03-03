@@ -24,10 +24,10 @@ class Interpreter(RequestListener):
         # από το GUI.
         GUIRequest().subscribe(self)
     
-    def onRequest(self, event: GUIRequest):
-        if (isinstance(event, GUIRequest)):
-            if (event._request == "GET_GAMES"):
-                InterpreterResponse().sendResponse(event, 'INTERPRETER SAID HI')
+    def onRequest(self, request: GUIRequest):
+        if (isinstance(request, GUIRequest)):
+            if (request._type == "GET_GAMES"):
+                InterpreterResponse().sendResponse(request, 'INTERPRETER SAID HI')
         
         
     
