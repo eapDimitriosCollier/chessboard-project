@@ -87,7 +87,6 @@ class AbstractSyntaxTreeBuilder:
     def MoveTextSection(self, parseNode):
         elementSequence = None
         gameTermination = None
-        isEmpty = False
         
         for node in parseNode.nodes:
             if node.nodeName == 'ElementSequence' : elementSequence = node.ASTNode
@@ -106,15 +105,21 @@ class AbstractSyntaxTreeBuilder:
                     continue
                 
                 if isWhitesTurn:
+                    movementSection[int(currentMoveId) - 1]['rawMoveWhite'] = element[0]['rawMove']
+                    element[0].pop('rawMove')
+                    
                     movementSection[int(currentMoveId) - 1]['whiteActions'] = element
                     isWhitesTurn = False
                 else:
+                    movementSection[int(currentMoveId) - 1]['rawMoveBlack'] = element[0]['rawMove']
+                    element[0].pop('rawMove')
+                    
                     movementSection[int(currentMoveId) - 1]['blackActions'] = element
                     isWhitesTurn = True
             
             parseNode.ASTNode = {"MovementSection": movementSection, "GameTermination": gameTermination}
         else:
-            parseNode.ASTNode = {"GameTermination": gameTermination}
+            parseNode.ASTNode = {"MovementSection": [], "GameTermination": gameTermination}
                                 
     def GameTermination(self, parseNode):
         token = parseNode.nodeInfo
@@ -154,7 +159,8 @@ class AbstractSyntaxTreeBuilder:
             parseNode.ASTNode.append({
                 "actionName": actionName, 
                 "arguments": self.extractActionArguments(actionName, token['token_value'])
-            })         
+            })
+            parseNode.ASTNode[0]["rawMove"] = token['token_value']      
     
     def NumericAnnotationGlyph(self, parseNode):
         # Απλά θα αγνοούμε τα NAGs προς το παρόν

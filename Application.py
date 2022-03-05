@@ -25,8 +25,20 @@ class Application(EventListener, ResponseListener):
         self.window.title(self.TITLE)
         self.window.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.window.config(background = "white")
+        # -- DEMO ONLY Για να δείξουμε πιο πρέπει να είναι το flow --
+        self.games = []
+        self.gameUUID = ''
+        self.tags = []
+        self.rawMoves = []
+        self.moveId = None
+        self.player = None
+        self.currentMove = []
         
-        self.window.bind('<space>', lambda e: self.guiGetGames())
+        self.window.bind('<space>', lambda e: GUIRequest().getGames())
+        self.window.bind('1', lambda e: GUIRequest().getTags(self.gameUUID))
+        self.window.bind('2', lambda e: GUIRequest().getRawMoves(self.gameUUID))
+        self.window.bind('3', lambda e: GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player))
+        
         # Get File...
         #...
         self.interpreterInit()
@@ -36,9 +48,6 @@ class Application(EventListener, ResponseListener):
         # Initialize events
         InterpreterEvent().subscribe(self)
         self.interpreter = Interpreter(txt)
-              
-    def guiGetGames(self):
-        GUIRequest().getGames()
         
     def onEvent(self, event: Event):
         if (isinstance(event, InterpreterEvent)):
@@ -65,19 +74,44 @@ class Application(EventListener, ResponseListener):
         if (isinstance(response, InterpreterResponse)):
             # Θα ήταν ωραίο να παίζαμε με match-case αντί για if, αλλά για backwards compatibility
             # ας το αφήσουμε καλύτερα...
+            
             if (response._request._type == "GET_GAMES"):
                 self.GetGamesResponseHandler(response._response)
-    
+            elif (response._request._type == "GET_TAGS"):
+                self.GetTagsResponseHandler(response._response)
+            elif (response._request._type == "GET_RAW_MOVES"):
+                self.GetRawMovesResponseHandler(response._response)
+            elif (response._request._type == "GET_NEXT_MOVE"):
+                self.GetGetNextMoveResponseHandler(response._response)
+            
     def onErrorResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
             self.interpreterErrorResponseHandler(response)
            
     def GetGamesResponseHandler(self, response):
-        print(response)
+        self.games = response
+        self.gameUUID = self.games[0]
+        print(self.gameUUID)
+    
+    def GetTagsResponseHandler(self, response):
+        self.tags = response
+        print(self.tags)
+    
+    def GetRawMovesResponseHandler(self, response):
+        self.rawMoves = response
+        print(self.rawMoves)
+    
+    def GetGetNextMoveResponseHandler(self, response):
+        self.currentMove = response['nextMove']
+        self.moveId = response['nextMoveId']
+        self.player = response['nextPlayer']
+        print('currentMove:', self.currentMove)
+        print('moveId: ', self.moveId)
+        print('player: ', self.player)
     
     def interpreterErrorResponseHandler(self, response):
         # Αν ο interpreter πετάξει error το παρουσιάζουμε στην οθόνη.
-        pass
+        print(response)
     
 if __name__ == '__main__':
     app = Application()
