@@ -1,26 +1,35 @@
-from RequestListener.RequestListener import RequestListener
 from Request.Request import Request
+from threading import Lock
 
 class Response():
-    _requestListeners: list = []
-    
+    _responseListeners: list = []
+    _lock = Lock()
+
     def __init__(self) -> None:
         self._response = None
         self._request : Request = None
     
-    def subscribe(self, requestListener: RequestListener) -> None:
-        self._requestListeners.append(requestListener)
+    def subscribe(self, responseListener) -> None:
+        Response._lock.acquire()
+        Response._responseListeners.append(responseListener)
+        Response._lock.release()
     
-    def unsubscribe(self, requestListener: RequestListener) -> None:
-        self._requestListeners.remove(requestListener)
+    def unsubscribe(self, responseListener) -> None:
+        Response._lock.acquire()
+        Response._responseListeners.remove(responseListener)
+        Response._lock.release()
         
     def dispatch(self) -> None:
-        for requestListener in self._requestListeners:
-            requestListener.onResponse(self)
+        Response._lock.acquire()
+        for responseListener in self._responseListeners:
+            responseListener.onResponse(self)
+        Response._lock.release()
     
     def dispatchError(self) -> None:
-        for requestListener in self._requestListeners:
-            requestListener.onErrorResponse(self)
+        Response._lock.acquire()
+        for responseListener in self._responseListeners:
+            responseListener.onErrorResponse(self)
+        Response._lock.release()
     
     def sendResponse(self, request: Request, response):
         self._request = request
