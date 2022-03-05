@@ -14,7 +14,8 @@ class InterpreterEvent(Event):
     # END_INTEPRETATION
     # ERROR
     _flag: str = ''
-    _details = None
+    _errorMessage = None
+    _exception = None
     
     def __init__(self):
         super().__init__()
@@ -49,9 +50,10 @@ class InterpreterEvent(Event):
         self.dispatch()
         InterpreterEvent._lock.release()
     
-    def interpretationFailed(self, details):
+    def interpretationFailed(self, errorMessage, exception):
         InterpreterEvent._lock.acquire()
         self._flag = "ERROR"  
-        self._details = details 
+        self._errorMessage = errorMessage 
+        self._exception = exception
         self.dispatchError()
         InterpreterEvent._lock.release()
