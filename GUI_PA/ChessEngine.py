@@ -23,13 +23,8 @@ class Board:
         self.Container.append(Knight(Color=COLOR.WHITE,Row=7,Column=6))
         self.Container.append(Rook(Color=COLOR.WHITE,Row=7,Column=7))    
         
-        self.MovingEvent = Event()
-
-    def OnMovingEvent(self,*args,**kwargs)->None:
-        self.MovingEvent(*args,**kwargs)
-        self.PrinBoard()
-    
-
+        self.OnMovingEvent = Event()
+        self.OnMovingEvent+=self.PrinBoard
 
     @property        
     def UnicodeBoard(self)->list:
@@ -56,7 +51,7 @@ class Board:
             raise Exception (f"Move {Color} {Piece} to: ({ToRow},{ToCol}) from: ({fromX},{fromY}) is not valid!")    
         
         self.OnMovingEvent( Piece,Color,ToRow=ToRow,ToCol=ToCol,FromRow=FromRow,FromCol=FromCol,Tag=tag)
-
+        #self.MovingEvent.OnMovingEvent( Piece,Color,ToRow=ToRow,ToCol=ToCol,FromRow=FromRow,FromCol=FromCol,Tag=tag)
 
     def CapturePiece(self,Row:int,Col:int)-> None:
         for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col)]:
@@ -101,7 +96,7 @@ class Board:
         self.MovePiece(PIECENAME.ROOK.name,COLOR.WHITE.name,ToRow=toRow,ToCol=3,FromRow=toRow,FromCol=0)
         self.MovePiece(PIECENAME.KING.name,COLOR.WHITE.name,ToRow=toRow,ToCol=2,FromRow=toRow,FromCol=4)    
     
-    def PrinBoard(self):
+    def PrinBoard(self,*args,**kwargs):
         print("",end= "\t")     
         i=0       
         for a in range(ord("a"),ord("h")+1):
@@ -131,19 +126,23 @@ class Event:
  
     def __call__(self, *args, **keywargs):
         for eventhandler in self.__eventhandlers:
-            #print (eventhandler,args,keywargs)
             eventhandler(*args, **keywargs)
+
 
 
 if __name__ == '__main__':
     ChessBoard=Board()
-    ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
+    ChessBoard.OnMovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
+    ChessBoard.OnMovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
+    #ChessBoard.MovingEvent+= ChessBoard.PrinBoard
+
 
     for item in ChessBoard.Container:
         if isinstance(item,Pawn):
             print (item.Unicode,item,item.Position.FileRank,item.GetValidMoves(ChessBoard.UnicodeBoard))
 
-    ChessBoard.MovePiece(PIECENAME.PAWN.name,Color=COLOR.WHITE.name, ToRow=5,ToCol=3)
+    ChessBoard.CapturePiece(1,0)
+    ChessBoard.MovePiece("ROOK",Color=COLOR.BLACK.name, ToRow=4,ToCol=0)
     #ChessBoard.MovePiece(PIECENAME.KNIGHT.name,Color=COLOR.WHITE.name,ToRow=5,ToCol=0)
     # ChessBoard.CapturePiece(0,0)
     # ChessBoard.CapturePiece(7,6)

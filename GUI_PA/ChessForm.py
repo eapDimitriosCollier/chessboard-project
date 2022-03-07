@@ -143,7 +143,7 @@ class ChessMainForm:
 
         #Create the checssboard and subscribe to the MovingEvent
         self.ChessBoard=Board()
-        self.ChessBoard.MovingEvent+= self.MovePiece
+        self.ChessBoard.OnMovingEvent+= self.MovePiece
         self.ChessBoard.CapturePiece(1,0)
 
         for obj in self.ChessBoard.Container:
