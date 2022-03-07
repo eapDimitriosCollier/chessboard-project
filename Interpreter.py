@@ -1,7 +1,7 @@
 from urllib import response
 from Lexer.Lexer import Lexer
 from Parser.Parser import Parser
-from InterpreterEvent import InterpreterEvent
+from Event.Event import Event
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
 from RequestListener.RequestListener import RequestListener
@@ -10,14 +10,13 @@ import uuid
 
 class Interpreter(RequestListener):
     def __init__(self, rawPGN):
-        self.parsingResult = None
-         
+        self.parsingResult = None 
         self.games = []
-        
         self.tags = {}
         self.moves = {}
         self.rawMoves = {}
         self.gameTerminations = {}
+        
         
         interpreterThread = Thread(target=self.start, args=(rawPGN,))
         interpreterThread.start()
@@ -29,19 +28,19 @@ class Interpreter(RequestListener):
         # (Επειδή αν θεωρήσουμε ότι κάθε παιχνίδι έχει από ~200 κινήσεις, 
         # το Parse Tree ξεπερνάει το βάθος των 1000 node και υπάρχει κίνδυνος stack overflow)
         if self.countGames(rawPGN) > 602:
-           InterpreterEvent().interpretationFailed('Too many games') 
+           Event('InterpretationFailed').invoke() 
            return  
         
-        InterpreterEvent().startInterpretation()
+        Event('InterpretationStarted').invoke()
         try:
             parser = Parser(Lexer(rawPGN))
             self.parsingResult = parser.getParsingResult()
         except Exception as exc:
-            InterpreterEvent().interpretationFailed('Couldn\'t parse, malformed PGN.', exc)
+            Event('InterpretationStarted').interpretationFailed('Couldn\'t parse, malformed PGN.', exc)
             return
         
         self.populateInterpreter()
-        InterpreterEvent().endInterpretation()
+        Event('InterpretationEnded').invoke()
 
         # Τώρα που ολοκληρώθηκε το interpretation, ξεκινάμε να ακούμε σε requests
         # από το GUI.
