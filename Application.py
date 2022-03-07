@@ -2,17 +2,15 @@ import tkinter as tk
 from sample_game import txt
 from tkinter import filedialog
 from Event.Event import Event
-from EventListener.EventListener import EventListener
 
 from Response.Response import Response
 from ResponseListener.ResponseListener import ResponseListener
 
 from Interpreter import Interpreter
-from InterpreterEvent import InterpreterEvent
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
 
-class Application(EventListener, ResponseListener):
+class Application(ResponseListener):
     def __init__(self) -> None:
         self.WIDTH = 600
         self.HEIGHT = 600
@@ -46,29 +44,20 @@ class Application(EventListener, ResponseListener):
     
     def interpreterInit(self) -> None:
         # Initialize events
-        InterpreterEvent().subscribe(self)
+        Event('InterpretationStarted').subscribe(self)
+        Event('InterpretationEnded').subscribe(self)
+        Event('InterpretationFailed').subscribe(self)
         self.interpreter = Interpreter(txt)
         
-    def onEvent(self, event: Event):
-        if (isinstance(event, InterpreterEvent)):
-            # Καλό είναι για αποφυγή του να γίνεται χαμός μέσα στην
-            # κάθε onEvent να υπάρχουν event handler methods για κάθε event. 
-            self.interpreterEventHandler(event)
     
-    def onErrorEvent(self, event: Event):
-        if (isinstance(event, InterpreterEvent)):
-            print(event._details)
+    def onInterpretationStarted(self, event):
+        print('Interpretation Started')
+        
+    def onInterpretationEnded(self, event):
+        print('Interpretation Ended')    
     
-    def interpreterEventHandler(self, event):
-        if (event._flag == "START_INTERPRETATION"):
-            print("Interpretation started")
-            # Loading window...
-        elif (event._flag == "END_INTERPRETATION"):
-            # Stop loading window...
-            print("Interpretation ended")
-            # Όταν τελειώσει το interpretion αρχίζουμε να "ακούμε" σε 
-            # responses από τον interpreter
-            InterpreterResponse().subscribe(self)
+    def onInterpretationFailed(self, event):
+        print('Interpretation Failed')
     
     def onResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
