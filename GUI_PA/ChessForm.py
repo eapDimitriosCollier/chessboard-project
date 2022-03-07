@@ -7,7 +7,7 @@ from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
 
 
-ImagePath="./GUI_PA/img/"
+ImagePath="./GUI_PA/img"
 MainWindowGeometryX=900
 MainWindowGeometryY=600
 ChessBoardX=600;ChessBoardY=600
@@ -127,7 +127,7 @@ class ChessMainForm:
         self.root.iconbitmap(f"{ImagePath}/ico/chess.ico")
 
         self.canvas = Canvas(self.root, width = MainWindowGeometryX, height = ChessBoardY, bd=0, highlightthickness=0)   
-        self.chessBoard_img=ImageTk.PhotoImage(Image.open(f"{ImagePath}chessboard.png"))
+        self.chessBoard_img=ImageTk.PhotoImage(Image.open(f"{ImagePath}/chessboard.png"))
         self.canvas.create_image(0, 0, anchor=NW, image=self.chessBoard_img) 
         self.canvas['background']=BackGroundColor
         
