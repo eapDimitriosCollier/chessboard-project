@@ -7,10 +7,6 @@ from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
 from ChessConstants import *
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 24f1679d809fd0198cf17228306867a16714f397
 MainWindowGeometryX=900
 MainWindowGeometryY=600
 ChessBoardX=600;ChessBoardY=600
