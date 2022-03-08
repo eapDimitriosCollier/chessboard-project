@@ -80,7 +80,7 @@ class Piece:
          if 'Unicode' in kwargs:
              self._unicode=kwargs['Unicode']
          self.Position=PiecePosition(Row,Column)
-         self.Tag=[] # List to hold any var type, will be used to hold Image Id
+         self._Tag=None # List to hold any var type, will be used to hold Image Id
 
 
     # @property
@@ -108,7 +108,15 @@ class Piece:
     @property
     def ImageFile(self):
         return self._imagefile
-    
+
+    @property
+    def Tag(self):
+        return self._Tag
+
+    @Tag.setter
+    def Tag(self,data:int):
+        self._Tag=data
+
     # @ImageFile.setter
     # def ImageFile(self,data):
     #     self._imagefile=data

@@ -5,9 +5,9 @@ from tkinter import messagebox
 from PIL import ImageTk,Image
 from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
+from ChessConstants import *
 
 
-ImagePath="./GUI_PA/IMG"
 MainWindowGeometryX=900
 MainWindowGeometryY=600
 ChessBoardX=600;ChessBoardY=600
@@ -98,6 +98,12 @@ class ChessMainForm:
         Column=kwargs['ToCol']
         self.canvas.moveto(tag,ChessBoardOffset+ChessBoardSquareSize*Column,ChessBoardOffset+ChessBoardSquareSize*Row)
 
+    def HidePiece(self,Tag):
+        self.canvas.itemconfig(Tag, state='hidden')
+
+    def ShowPiece(self,Tag):
+        self.canvas.itemconfig(Tag, state='normal')
+
 
     def CreateMenuBar(self)->None:
         menubar = Menu(self.root)
@@ -143,8 +149,7 @@ class ChessMainForm:
 
         #Create the checssboard and subscribe to the MovingEvent
         self.ChessBoard=Board()
-        self.ChessBoard.OnMovingEvent+= self.MovePiece
-        self.ChessBoard.CapturePiece(1,0)
+
 
         for obj in self.ChessBoard.Container:
             if isinstance(obj,Piece):
@@ -152,11 +157,23 @@ class ChessMainForm:
                 obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
                                         ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
                                         anchor=NW, image=self.ImageContainer[-1]) 
-                
+
+        self.ChessBoard.MovingEvent+= self.MovePiece
+        self.ChessBoard.CaptureEvent+= self.HidePiece
+    
+        self.ChessBoard.CapturePiece(1,0)
+        self.ChessBoard.CapturePiece(0,6)
+        self.ChessBoard.CapturePiece(0,5)
+        self.ChessBoard.KingKastling(COLOR.BLACK.name)      
+        #self.UpdateBoard()                        
         self.canvas.pack(side="left")
         self.CreateMenuBar()
         self.CreateTree()
 
+    def UpdateBoard(self)->None:
+        for obj in self.ChessBoard.Container:
+            if isinstance(obj,Piece):
+                self.MovePiece(ToRow=obj.Position.Row,ToCol=obj.Position.Col,Tag=obj.Tag)
 
 if __name__ == '__main__':
     MainWindow=ChessMainForm()

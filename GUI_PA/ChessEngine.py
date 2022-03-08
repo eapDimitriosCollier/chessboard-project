@@ -23,8 +23,11 @@ class Board:
         self.Container.append(Knight(Color=COLOR.WHITE,Row=7,Column=6))
         self.Container.append(Rook(Color=COLOR.WHITE,Row=7,Column=7))    
         
-        self.OnMovingEvent = Event()
-        self.OnMovingEvent+=self.PrinBoard
+        self.MovingEvent = Event()
+        self.CaptureEvent  = Event()
+        #self.CaptureEvent= Event()
+        self.MovingEvent+=self.PrinBoard
+        self.CaptureEvent+=self.PrinBoard
 
     @property        
     def UnicodeBoard(self)->list:
@@ -50,13 +53,14 @@ class Board:
             fromY=FromCol if FromCol!=None else "any"
             raise Exception (f"Move {Color} {Piece} to: ({ToRow},{ToCol}) from: ({fromX},{fromY}) is not valid!")    
         
-        self.OnMovingEvent( Piece,Color,ToRow=ToRow,ToCol=ToCol,FromRow=FromRow,FromCol=FromCol,Tag=tag)
-        #self.MovingEvent.OnMovingEvent( Piece,Color,ToRow=ToRow,ToCol=ToCol,FromRow=FromRow,FromCol=FromCol,Tag=tag)
+        #raise moving event. All the event subscribers will be notified from the event handler
+        self.MovingEvent( Piece,Color,ToRow=ToRow,ToCol=ToCol,Tag=tag) #,FromRow=FromRow,FromCol=FromCol
 
     def CapturePiece(self,Row:int,Col:int)-> None:
         for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col)]:
             #item.IsVisible=False
             self.Container.pop(self.Container.index(item))
+            self.CaptureEvent(Tag=item.Tag)
             break
         else:
             raise Exception (f"No piece at ({Row},{Col})")    
@@ -87,14 +91,41 @@ class Board:
             raise Exception (f"No piece at ({Row},{Col})")      
 
     def KingKastling(self,Color:str)-> None:    
-        toRow=7 if Color==COLOR.WHITE.name else 0
-        self.MovePiece(PIECENAME.ROOK.name,COLOR.WHITE.name,ToRow=toRow,ToCol=5,FromRow=toRow,FromCol=7)
-        self.MovePiece(PIECENAME.KING.name,COLOR.WHITE.name,ToRow=toRow,ToCol=6,FromRow=toRow,FromCol=4)        
+        if Color==COLOR.WHITE.name:
+            _ToRow=7 
+        else:
+            _ToRow=0
+
+        self.MovePiece(PIECENAME.ROOK.name,Color,ToRow=_ToRow,ToCol=5,FromRow=_ToRow)#FromCol=7
+
+        for item in [piece for piece in self.Container if (piece.Position.Row==_ToRow and piece.Position.Col==4)]:
+            tmpKing=item
+            break
+        
+        if isinstance(tmpKing,King):
+            tmpKing.Position.Col=6
+
+        self.MovingEvent( PIECENAME.KING.name,Color,ToRow=tmpKing.Position.Row,ToCol=tmpKing.Position.Col,Tag=tmpKing.Tag)#FromCol=4
+
+        
 
     def QueenKastling(self,Color:str)-> None:
-        toRow=7 if Color==COLOR.WHITE.name else 0
-        self.MovePiece(PIECENAME.ROOK.name,COLOR.WHITE.name,ToRow=toRow,ToCol=3,FromRow=toRow,FromCol=0)
-        self.MovePiece(PIECENAME.KING.name,COLOR.WHITE.name,ToRow=toRow,ToCol=2,FromRow=toRow,FromCol=4)    
+        if Color==COLOR.WHITE.name:
+            _ToRow=7 
+        else:
+            _ToRow=0
+
+        self.MovePiece(PIECENAME.ROOK.name,Color,ToRow=_ToRow,ToCol=3,FromRow=_ToRow)
+
+        for item in [piece for piece in self.Container if (piece.Position.Row==_ToRow and piece.Position.Col==4)]:
+            tmpKing=item
+            break
+        
+        if isinstance(tmpKing,King):
+            tmpKing.Position.Col=2
+        
+        self.MovingEvent( PIECENAME.KING.name,Color,ToRow=tmpKing.Position.Row,ToCol=tmpKing.Position.Col,Tag=tmpKing.Tag)#FromCol=4
+
     
     def PrinBoard(self,*args,**kwargs):
         print("",end= "\t")     
@@ -125,6 +156,7 @@ class Event:
         return self
  
     def __call__(self, *args, **keywargs):
+        #This is the OnEvent method
         for eventhandler in self.__eventhandlers:
             eventhandler(*args, **keywargs)
 
@@ -132,20 +164,22 @@ class Event:
 
 if __name__ == '__main__':
     ChessBoard=Board()
-    ChessBoard.OnMovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
-    ChessBoard.OnMovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
+    ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
+    ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
     #ChessBoard.MovingEvent+= ChessBoard.PrinBoard
 
 
-    for item in ChessBoard.Container:
-        if isinstance(item,Pawn):
-            print (item.Unicode,item,item.Position.FileRank,item.GetValidMoves(ChessBoard.UnicodeBoard))
+
 
     ChessBoard.CapturePiece(1,0)
-    ChessBoard.MovePiece("ROOK",Color=COLOR.BLACK.name, ToRow=4,ToCol=0)
+    
     #ChessBoard.MovePiece(PIECENAME.KNIGHT.name,Color=COLOR.WHITE.name,ToRow=5,ToCol=0)
-    # ChessBoard.CapturePiece(0,0)
-    # ChessBoard.CapturePiece(7,6)
+    ChessBoard.CapturePiece(0,6)
+    ChessBoard.CapturePiece(0,5)
+    for item in ChessBoard.Container:
+        if isinstance(item,Rook):
+            print (item.Unicode,item,item.Position.FileRank,item.GetValidMoves(ChessBoard.UnicodeBoard))
+    ChessBoard.KingKastling(COLOR.BLACK.name)
     # ChessBoard.CapturePiece(7,5)
     # ChessBoard.CapturePiece(7,2)
     # ChessBoard.CapturePiece(7,3)
