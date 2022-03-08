@@ -7,15 +7,6 @@ from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
 from ChessConstants import *
 
-MainWindowGeometryX=900
-MainWindowGeometryY=600
-ChessBoardX=600;ChessBoardY=600
-ChessBoardSquareSize=64
-ChessPieceSize=60
-ChessBoardOffset=42+ChessBoardSquareSize-ChessPieceSize
-BackGroundColor='#333333'
-
-
 
 class ChessMainForm:
     def __init__(self) -> None:
@@ -148,7 +139,8 @@ class ChessMainForm:
 
         #Create the checssboard and subscribe to the MovingEvent
         self.ChessBoard=Board()
-
+        self.ChessBoard.MovingEvent+= self.MovePiece
+        self.ChessBoard.CaptureEvent+= self.HidePiece
 
         for obj in self.ChessBoard.Container:
             if isinstance(obj,Piece):
@@ -157,13 +149,16 @@ class ChessMainForm:
                                         ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
                                         anchor=NW, image=self.ImageContainer[-1]) 
 
-        self.ChessBoard.MovingEvent+= self.MovePiece
-        self.ChessBoard.CaptureEvent+= self.HidePiece
+
     
         self.ChessBoard.CapturePiece(1,0)
         self.ChessBoard.CapturePiece(0,6)
         self.ChessBoard.CapturePiece(0,5)
         self.ChessBoard.KingKastling(COLOR.BLACK.name)      
+        self.ChessBoard.CapturePiece(7,1)
+        self.ChessBoard.CapturePiece(7,2)
+        self.ChessBoard.CapturePiece(7,3)
+        self.ChessBoard.QueenKastling(COLOR.WHITE.name)
         #self.UpdateBoard()                        
         self.canvas.pack(side="left")
         self.CreateMenuBar()
