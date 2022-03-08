@@ -48,6 +48,7 @@ class Application(ResponseListener):
         Event('InterpretationEnded').subscribe(self)
         Event('InterpretationFailed').subscribe(self)
         self.interpreter = Interpreter(txt)
+        InterpreterResponse().subscribe(self)
         
     
     def onInterpretationStarted(self, event):

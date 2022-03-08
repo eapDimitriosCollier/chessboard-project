@@ -4,20 +4,20 @@ from threading import Lock
 
 class Event():
     """Thread safe Event"""
-    _eventList = {}
+    __eventList = {}
     
-    def __init__(self, EventName, **EventKwargs):
-        self._currEvent = None
+    def __init__(self, eventName, **eventKwargs):
+        self.__currEvent = None
         
-        if EventName not in Event._eventList:
-            self.createNewEvent(EventName, **EventKwargs)
+        if eventName not in Event.__eventList:
+            self.__currEvent = self.createNewEvent(eventName, **eventKwargs)
         else:
-            self._currEvent = Event._eventList[EventName]
+            self.__currEvent = Event.__eventList[eventName]
     
     def __getattr__(self, eventFuncName):
-        return getattr(self._currEvent, eventFuncName)
+        return getattr(self.__currEvent, eventFuncName)
        
-    def createNewEvent(self, EventName, **EventKwargs):
+    def createNewEvent(self, EventName, **eventKwargs):
         eventCls = type(EventName, (), {
             'subscribe' : subscribe,
             'unsubscribe' : unsubscribe,
@@ -27,11 +27,12 @@ class Event():
         setattr(eventCls, '__lock', Lock())
         setattr(eventCls, '__eventListeners', [])
         setattr(eventCls, '__eventName', EventName)
-        for variableName, variableContents in EventKwargs.items():
-            setattr(eventCls, variableName, variableContents)
         
-        self._currEvent = eventCls()    
-        Event._eventList[EventName] = self._currEvent     
+        for variableName, variableContents in eventKwargs.items():
+            setattr(eventCls, variableName, variableContents)
+            
+        Event.__eventList[EventName] = eventCls
+        return eventCls()
             
 @classmethod
 def subscribe(event, eventListener):
