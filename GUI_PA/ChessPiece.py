@@ -1,4 +1,5 @@
 from enum import Enum,unique
+from ChessConstants import *
 
 @unique
 class COLOR(Enum):
@@ -12,7 +13,6 @@ class PIECENAME(Enum):
     QUEEN=4
     KING=5
     PAWN=6
-ImagePath="./GUI_PA/img/"
 
 #Black Pieces 0x265A to 0x265F
 #White Pieces 0x2654 to 0x2659
@@ -117,10 +117,10 @@ class Piece:
 class Rook(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}brook.png"
+            kwargs['ImageFile']=f"{ImagePath}/brook.png"
             kwargs['Unicode']="\u265C"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wrook.png"
+            kwargs['ImageFile']=f"{ImagePath}/wrook.png"
             kwargs['Unicode']="\u2656"
         super().__init__(**kwargs)
 
@@ -180,10 +180,10 @@ class Rook(Piece):
 class Knight(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}bknight.png"
+            kwargs['ImageFile']=f"{ImagePath}/bknight.png"
             kwargs['Unicode']="\u265E"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wknight.png"
+            kwargs['ImageFile']=f"{ImagePath}/wknight.png"
             kwargs['Unicode']="\u2658"
         super().__init__(**kwargs)
 
@@ -232,10 +232,10 @@ class Knight(Piece):
 class Bishop(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}bbishop.png"
+            kwargs['ImageFile']=f"{ImagePath}/bbishop.png"
             kwargs['Unicode']="\u265D"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wbishop.png"
+            kwargs['ImageFile']=f"{ImagePath}/wbishop.png"
             kwargs['Unicode']="\u2657"
         super().__init__(**kwargs)
 
@@ -293,10 +293,10 @@ class Bishop(Piece):
 class Queen(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}bqueen.png"
+            kwargs['ImageFile']=f"{ImagePath}/bqueen.png"
             kwargs['Unicode']="\u265B"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wqueen.png"
+            kwargs['ImageFile']=f"{ImagePath}/wqueen.png"
             kwargs['Unicode']="\u2655"
         super().__init__(**kwargs)
 
@@ -322,10 +322,10 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}bking.png"
+            kwargs['ImageFile']=f"{ImagePath}/bking.png"
             kwargs['Unicode']="\u265A"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wking.png"
+            kwargs['ImageFile']=f"{ImagePath}/wking.png"
             kwargs['Unicode']="\u2654"
         super().__init__(**kwargs)
 
@@ -373,10 +373,10 @@ class King(Piece):
 class Pawn(Piece):
     def __init__(self,**kwargs) -> None: 
         if kwargs['Color']==COLOR.BLACK:
-            kwargs['ImageFile']=f"{ImagePath}bpawn.png"
+            kwargs['ImageFile']=f"{ImagePath}/bpawn.png"
             kwargs['Unicode']="\u265F"
         else:
-            kwargs['ImageFile']=f"{ImagePath}wpawn.png"
+            kwargs['ImageFile']=f"{ImagePath}/wpawn.png"
             kwargs['Unicode']="\u2659"
 
         super().__init__(**kwargs)
