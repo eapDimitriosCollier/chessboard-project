@@ -7,7 +7,10 @@ from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
 from ChessConstants import *
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 24f1679d809fd0198cf17228306867a16714f397
 MainWindowGeometryX=900
 MainWindowGeometryY=600
 ChessBoardX=600;ChessBoardY=600
@@ -137,10 +140,10 @@ class ChessMainForm:
         self.canvas.create_image(0, 0, anchor=NW, image=self.chessBoard_img) 
         self.canvas['background']=BackGroundColor
         
-        self.next_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/buttons/next.png"))
-        self.previous_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/buttons/previous.png"))
-        self.play_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/buttons/play.png"))
-        self.pause_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/buttons/pause.png"))
+        self.next_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/next.png"))
+        self.previous_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/previous.png"))
+        self.play_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/play.png"))
+        self.pause_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/pause.png"))
         MovePreviousBtn = self.canvas.create_window(650, 550, anchor='nw', window=Button(self.root,image=self.previous_icon,command=self.MovePrevious))
         MoveNextBtn = self.canvas.create_window(700, 550, anchor='nw', window=Button(self.root,image=self.next_icon,command=self.MoveNext) )
         PlayBtn = self.canvas.create_window(750, 550, anchor='nw', window=Button(self.root,image=self.play_icon))#,command=startThread)) 
