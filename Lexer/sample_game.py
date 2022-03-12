@@ -1,4 +1,56 @@
-txt="""
+txt="""[Event "GBR-ch 59th"]
+[Site "Brighton"]
+[Date "1972.08.18"]
+[Round "5"]
+[White "Pritchett, Craig"]
+[Black "Corden, Martyn"]
+[Result "1-0"]
+[WhiteElo "2340"]
+[BlackElo "2275"]
+[ECO "C11"]
+[EventDate "1972.08.14"]
+[PlyCount "81"]
+[EventType "swiss"]
+[EventRounds "11"]
+[EventCountry "GBR"]
+
+1. e4 e6 2. d4 d5 3. Nc3 Nf6 4. e5 Nfd7 5. f4 c5 6. Nf3 Nc6 7. Be3 a6 8.
+Qd2 b5 9. dxc5 Nxc5 10. Qf2 Qe7 11. a3 b4 12. axb4 Nxb4 13. Ra5 Nb7 14.
+Bb5+ Bd7 15. Bxd7+ Qxd7 16. Ra1 Be7 17. O-O Qc7 18. Kh1 Nc5 19. Nb5 Qc8 20.
+Nbd4 Ne4 21. Qe2 O-O 22. c3 Nc6 23. Ra2 Bc5 24. Rfa1 Nb8 25. Nd2 Nxd2 26.
+Qxd2 Bxd4 27. Bxd4 Qc4 28. Ra4 Qb5 29. Ra5 Qb7 30. R5a4 Rc8 31. b4 h6 32.
+h3 Nc6 33. Bc5 Qb5 34. Qa2 Nb8 35. Ra5 Qd3 36. Qa3 Qe4 37. b5 Qxf4 38. b6
+Nc6 39. b7 Nxa5 40. Qxa5 Rcb8 41. bxa8=Q 1-0"""
+
+"""[Event "GBR-ch 58th"]
+[Site "Blackpool"]
+[Date "1971.08.13"]
+[Round "5"]
+[White "Wade, Robert"]
+[Black "Littlewood, John Eric"]
+[Result "0-1"]
+[WhiteElo "2365"]
+[BlackElo "2310"]
+[ECO "D80"]
+[EventDate "1971.08.09"]
+[PlyCount "94"]
+[EventType "swiss"]
+[EventRounds "11"]
+[EventCountry "GBR"]
+
+
+1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. Bg5 Ne4 5. Bh4 Bg7 6. e3 c5 7. cxd5 Nxc3 8.
+bxc3 cxd4 9. cxd4 Qxd5 10. Nf3 Nc6 11. Qa4 O-O 12. Qb5 Qe4 13. Be2 e5 14.
+d5 Nb4 15. O-O Nxd5 16. Rac1 a6 17. Qb3 Be6 18. Rc4 Nf4 19. Rxe4 Nxe2+ 20.
+Kh1 Bxb3 21. axb3 b5 22. Be7 Rfe8 23. Bb4 f5 24. Rh4 Bf6 25. Rh3 a5 26. Bd2
+b4 27. e4 fxe4 28. Ng5 Bxg5 29. Bxg5 Rac8 30. Re3 Nd4 31. h4 h6 32. Bxh6
+Nf5 33. Bg5 Nxe3 34. fxe3 Rf8 35. Ra1 Rc3 36. Rxa5 Rxb3 37. Rxe5 Rd3 38.
+Rb5 b3 39. Kg1 Rc8 40. Rb7 Rc2 41. Kh2 b2 42. Bf6 Rdd2 43. Kg3 Rxg2+ 44.
+Kf4 Rcf2+ 45. Ke5 Rg1 46. Rb8+ Kf7 47. Rb7+ Ke8 0-1
+"""
+
+
+"""
 [Event "GMA, Wijk aan Zee NED"] 
 [Site "?"]
 [Date "2003.??.??"]
