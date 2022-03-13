@@ -173,10 +173,10 @@ class ChessMainForm:
             x,y=self.canvas.coords(tag)
 
         self.canvas.moveto(tag,destX,destY)
-        
-        Thread=threading.Thread(target=PlayWAV,args=(MoveWAV,))
-        Thread.daemon=True
-        Thread.start()    
+        PlayWAV(MoveWAV)
+        # Thread=threading.Thread(target=PlayWAV,args=(MoveWAV,))
+        # Thread.daemon=True
+        # Thread.start()    
 
 
         sleep((1/1000)*450)        
@@ -193,9 +193,10 @@ class ChessMainForm:
             
             #print ("waiting to kill ",Tag)
             pass
-        Thread=threading.Thread(target=PlayWAV,args=(CaptureWAV,))
-        Thread.daemon=True
-        Thread.start()    
+        PlayWAV(CaptureWAV)
+        # Thread=threading.Thread(target=PlayWAV,args=(CaptureWAV,))
+        # Thread.daemon=True
+        # Thread.start()    
         self.canvas.itemconfig(Tag, state='hidden')
 
     def test(self):
@@ -404,9 +405,10 @@ class ChessMainForm:
             
 
         elif data['actionName']=='Check':
-            Thread=threading.Thread(target=PlayWAV,args=(CheckWAV,))
-            Thread.daemon=True
-            Thread.start()    
+            PlayWAV(CheckWAV)
+            #Thread=threading.Thread(target=PlayWAV,args=(CheckWAV,))
+            #Thread.daemon=True
+            #Thread.start()    
             # Thread=threading.Thread(target=playsound(os.getcwd()+'/GUI_PA/sound/chk8.wav'))
             # Thread.daemon=True
             # Thread.start()
