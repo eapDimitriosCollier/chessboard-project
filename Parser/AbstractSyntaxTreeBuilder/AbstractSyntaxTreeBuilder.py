@@ -177,11 +177,7 @@ class AbstractSyntaxTreeBuilder:
         
         # Check for Movement, Promotion, Castle
         # Ο έλεγχος για την εγκυρότητα του SANMove έχει γίνει ήδη από το ParseTree.
-        
-        #TODO: Assert that each player can only castle once
-        # can promote 8 times and a checkmate can occur only once per game
-        #TODO: Refactor
-        
+                
         if 'O' in sanMove:
             actionStack.append('Castle')
         else:

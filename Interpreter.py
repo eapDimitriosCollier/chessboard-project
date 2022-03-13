@@ -22,21 +22,13 @@ class Interpreter(RequestListener):
         interpreterThread.start()
 
     def start(self, rawPGN):
-        # Περιορίζουμε το PGN σε 602 παιχνίδια
-        # (Αυτό το κάνουμε μόνο για τώρα επειδή το sample_game έχει 602 παιχνίδια.)
-        # O πραγματικός περιορισμός θα είναι 50 παιχνίδια 
-        # (Επειδή αν θεωρήσουμε ότι κάθε παιχνίδι έχει από ~200 κινήσεις, 
-        # το Parse Tree ξεπερνάει το βάθος των 1000 node και υπάρχει κίνδυνος stack overflow)
-        if self.countGames(rawPGN) > 602:
-           Event('InterpretationFailed').invoke() 
-           return  
         
         Event('InterpretationStarted').invoke()
         try:
             parser = Parser(Lexer(rawPGN))
             self.parsingResult = parser.getParsingResult()
         except Exception as exc:
-            Event('InterpretationStarted').interpretationFailed('Couldn\'t parse, malformed PGN.', exc)
+            Event('InterpretationFailed', message='Couldn\'t parse, malformed PGN.', exception=exc).invoke()
             return
         
         self.populateInterpreter()
@@ -160,7 +152,6 @@ class Interpreter(RequestListener):
         # ώστε παιχνίδια που έχουν parsαριστεί ήδη, να μην ξαναparsάρονται.)
         
         for game in self.parsingResult:
-            
             # Παράγουμε UUID και γεμίζουμε τα games
             currentGameUUID = str(uuid.uuid4())
             game['uuid'] = currentGameUUID 

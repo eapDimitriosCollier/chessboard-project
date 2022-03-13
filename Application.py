@@ -46,11 +46,10 @@ class Application(ResponseListener):
         # Initialize events
         Event('InterpretationStarted').subscribe(self)
         Event('InterpretationEnded').subscribe(self)
-        Event('InterpretationFailed').subscribe(self)
+        Event('InterpretationFailed', message='', exception='').subscribe(self)
         self.interpreter = Interpreter(txt)
         InterpreterResponse().subscribe(self)
         
-    
     def onInterpretationStarted(self, event):
         print('Interpretation Started')
         
@@ -58,8 +57,9 @@ class Application(ResponseListener):
         print('Interpretation Ended')    
     
     def onInterpretationFailed(self, event):
-        print('Interpretation Failed')
-    
+        print('Interpretation Failed', event.message)
+        raise event.exception
+            
     def onResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
             # Θα ήταν ωραίο να παίζαμε με match-case αντί για if, αλλά για backwards compatibility
@@ -72,7 +72,7 @@ class Application(ResponseListener):
             elif (response._request._type == "GET_RAW_MOVES"):
                 self.GetRawMovesResponseHandler(response._response)
             elif (response._request._type == "GET_NEXT_MOVE"):
-                self.GetGetNextMoveResponseHandler(response._response)
+                self.GetNextMoveResponseHandler(response._response)
             
     def onErrorResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
@@ -91,7 +91,7 @@ class Application(ResponseListener):
         self.rawMoves = response
         print(self.rawMoves)
     
-    def GetGetNextMoveResponseHandler(self, response):
+    def GetNextMoveResponseHandler(self, response):
         self.currentMove = response['nextMove']
         self.moveId = response['nextMoveId']
         self.player = response['nextPlayer']
