@@ -13,6 +13,9 @@ class Event():
             self.__currEvent = self.createNewEvent(eventName, **eventKwargs)
         else:
             self.__currEvent = Event.__eventList[eventName]
+        
+        for variableName, variableContents in eventKwargs.items():
+            setattr(self.__currEvent, variableName, variableContents)    
     
     def __getattr__(self, eventFuncName):
         return getattr(self.__currEvent, eventFuncName)
@@ -32,7 +35,7 @@ class Event():
             setattr(eventCls, variableName, variableContents)
             
         Event.__eventList[EventName] = eventCls
-        return eventCls()
+        return eventCls
             
 @classmethod
 def subscribe(event, eventListener):
