@@ -315,7 +315,7 @@ class Queen(Piece):
         validMoves=[]
         row=self.Position.Row
         col=self.Position.Col
-        color=COLOR.BLACK if self.Color==COLOR.BLACK else COLOR.WHITE
+        color=COLOR.BLACK if self.Color==COLOR.BLACK.name else COLOR.WHITE
 
         #Queen has the same movement set with the Bishop and the Rook
         #A temporary class of each of them is declared
@@ -402,7 +402,7 @@ class Pawn(Piece):
                 if Board[row-1][col]==None:
                     validMoves=[[row-1,col]]
 
-                if col>1 and Board[row-1][col-1]:
+                if col>0 and Board[row-1][col-1]:
                     if Board[row-1][col-1] in BlackUnicodes:
                         validMoves.append([row-1,col-1])
 
@@ -419,12 +419,12 @@ class Pawn(Piece):
                 if Board[row+1][col]==None:
                     validMoves=[[row+1,col]]
 
-                if col>1 and Board[row+1][col-1]:
+                if col>0 and Board[row+1][col-1]:
                     if Board[row+1][col-1] in WhiteUnicodes:
                         validMoves.append([row+1,col-1])
 
                 if col<7 and Board[row+1][col+1]:
-                    if Board[row+1][col+1] in BlackUnicodes:
+                    if Board[row+1][col+1] in WhiteUnicodes:
                         validMoves.append([row+1,col+1])
 
             #if this is the first move then it can move one additional square
