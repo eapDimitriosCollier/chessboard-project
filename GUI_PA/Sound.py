@@ -10,7 +10,7 @@ CaptureWAV = os.getcwd()+u'/GUI_PA/sound/Cap.wav'
 
 
 def PlayWAV(wav_file:str)->None:
-    Thread=threading.Thread(target=playsound,args=(MoveWAV,))
+    Thread=threading.Thread(target=playsound,args=(wav_file,))
     Thread.daemon=True
     Thread.start()        
     Thread.join()
@@ -18,7 +18,7 @@ def PlayWAV(wav_file:str)->None:
 
 
 if __name__ == '__main__':
-    for _ in range(100):
+    for _ in range(10):
         PlayWAV(MoveWAV)
         PlayWAV(CheckWAV)
         PlayWAV(CaptureWAV)
