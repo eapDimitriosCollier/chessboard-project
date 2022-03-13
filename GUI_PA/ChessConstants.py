@@ -1,5 +1,4 @@
 import os 
-
 ImagePath = os.getcwd()+"/GUI_PA/IMG"
 MainWindowGeometryX=900
 MainWindowGeometryY=600
