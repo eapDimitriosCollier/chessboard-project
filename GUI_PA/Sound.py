@@ -19,7 +19,6 @@ class Sound:
 
     @classmethod
     def __Play(cls):
-        Event('WavisPlaying').invoke()
         cls.ThreadLock.acquire()
         wav=cls.PlayQueue.pop(0)
         cls.ThreadLock.release()
