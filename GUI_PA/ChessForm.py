@@ -187,6 +187,7 @@ class ChessMainForm:
         print (PgnString)
         self.txt=PgnString
         self.interpreter = Interpreter(PgnString)
+        self.PopulateBoardIMG()
         
         
 
