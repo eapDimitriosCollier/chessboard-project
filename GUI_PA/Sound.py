@@ -1,24 +1,50 @@
-import sys
 import os
 import threading
-
+import winsound
+import sys
 sys.path.append('../CHESSBOARD-PROJECT')
-from playsound import playsound
+from Event.Event import Event, invoke
+#sys.path.append('../CHESSBOARD-PROJECT')
 MoveWAV = os.getcwd()+u'/GUI_PA/sound/Move.wav'
 CheckWAV = os.getcwd()+u'/GUI_PA/sound/Check.wav'
 CaptureWAV = os.getcwd()+u'/GUI_PA/sound/Cap.wav'
 
+class Sound:
+    PlayQueue=[]
+    ThreadLock=threading.Lock()
+    IsInit=False
 
-def PlayWAV(wav_file:str)->None:
-    Thread=threading.Thread(target=playsound,args=(wav_file,))
-    Thread.daemon=True
-    Thread.start()        
-    Thread.join()
-    #playsound(wav_file)
+    @classmethod
+    def onWavInQueue(cls,event):
+        cls.__Play()
 
+    @classmethod
+    def __Play(cls):
+        Event('WavisPlaying').invoke()
+        cls.ThreadLock.acquire()
+        wav=cls.PlayQueue.pop(0)
+        cls.ThreadLock.release()
+        winsound.PlaySound(wav, winsound.SND_FILENAME)
+
+
+    @classmethod
+    def PlayWAV(cls,wav_file:str)->None:
+        cls.ThreadLock.acquire()
+        if not getattr(cls,"IsInit"):
+            Event('WavInQueue').subscribe(cls)
+            setattr(cls,"IsInit",True)
+        cls.PlayQueue.append(wav_file)
+        cls.ThreadLock.release()
+        Event('WavInQueue').invoke()        
+        
 
 if __name__ == '__main__':
     for _ in range(10):
-        PlayWAV(MoveWAV)
-        PlayWAV(CheckWAV)
-        PlayWAV(CaptureWAV)
+        thread=threading.Thread(target=Sound.PlayWAV,args=(MoveWAV,))
+        thread.start()
+        thread=threading.Thread(target=Sound.PlayWAV,args=(CheckWAV,))
+        thread.start()
+        thread=threading.Thread(target=Sound.PlayWAV,args=(CaptureWAV,))
+        thread.start()
+    
+
