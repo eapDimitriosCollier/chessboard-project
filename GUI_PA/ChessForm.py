@@ -2,18 +2,14 @@ import sys
 from time import sleep
 sys.path.append('../CHESSBOARD-PROJECT')
 from GUI_PA.Sound import *
-#needs to install Pillow (pip install pillow)
-from Sound import *
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk,messagebox
 from PIL import ImageTk,Image
 from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
 from ChessConstants import *
 from tkinter import filedialog
 from FileExplorer.FileExplorer import FileExplorer
-import threading
 from Lexer.sample_game import txt
 from Event.Event import Event
 from Response.Response import Response
@@ -21,14 +17,14 @@ from ResponseListener.ResponseListener import ResponseListener
 from Interpreter import Interpreter
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
-from Timer import RepeatTimer
+from CustomTimer import RepeatTimer,threading
 
 class ChessMainForm:
     def __init__(self) -> None:
         self.root=Tk()
         self.canvas = Canvas(self.root, width = 800, height = 600) 
         self.ImageContainer=[]
-        self.AnimationSpeed=.4
+        self.AnimationSpeed=.5
         self.AnimateTimerThread=None
         self.InitializeComponents()
         self.root.mainloop()
