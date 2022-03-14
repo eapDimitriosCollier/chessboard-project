@@ -4,7 +4,6 @@ import winsound
 import sys
 sys.path.append('../CHESSBOARD-PROJECT')
 from Event.Event import Event, invoke
-#sys.path.append('../CHESSBOARD-PROJECT')
 MoveWAV = os.getcwd()+u'/GUI_PA/sound/Move.wav'
 CheckWAV = os.getcwd()+u'/GUI_PA/sound/CheckII.wav'
 CaptureWAV = os.getcwd()+u'/GUI_PA/sound/Cap.wav'
