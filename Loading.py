@@ -56,3 +56,7 @@ class Loading:
 
     def onLoadingMessage(self, event) -> None:
         print(event.message) #Loading message: Giwrgo gamhse tous
+
+if __name__ == '__main__':
+    x=Loading()
+    x.start()
