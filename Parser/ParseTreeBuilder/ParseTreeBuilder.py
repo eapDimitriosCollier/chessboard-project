@@ -182,10 +182,7 @@ class ParseTreeBuilder:
         if (tagIdentifier in self.usedTagIdentifiers):
             raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], f'Tag Identifier {tagIdentifier} has already been used.')
         
-        if (tagIdentifier not in ParserConstants.VALID_TAG_IDENTIFIERS):
-            raise LogicError(self.Lexer.index, currentToken['Line'], currentToken['Position'], f'Tag Identifier {tagIdentifier} is not a valid tag identifier.')
-        else:
-            self.usedTagIdentifiers.add(tagIdentifier)
+        self.usedTagIdentifiers.add(tagIdentifier)
 
     def TagValue(self) -> None:
         self.expectType('STRING')

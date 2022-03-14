@@ -1,7 +1,7 @@
 import sys
 from time import sleep
 sys.path.append('../CHESSBOARD-PROJECT')
-from GUI_PA.Sound import *
+from Sound import *
 from tkinter import *
 from tkinter import ttk,messagebox
 from PIL import ImageTk,Image
