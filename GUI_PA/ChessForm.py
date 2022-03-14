@@ -449,6 +449,7 @@ class ChessMainForm:
                 self.GetRawMovesResponseHandler(response._response)
             elif (response._request._type == "GET_NEXT_MOVE"):
                 self.GetGetNextMoveResponseHandler(response._response)
+                self.OnReadyToMove()
             
     def onErrorResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
@@ -474,7 +475,7 @@ class ChessMainForm:
         print('currentMove:', self.currentMove)
         print('moveId: ', self.moveId)
         print('player: ', self.player)
-        self.OnReadyToMove()
+        
         
 
   
