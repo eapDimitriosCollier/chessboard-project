@@ -1,3 +1,4 @@
+from itertools import starmap
 import os
 import threading
 import winsound
@@ -24,9 +25,9 @@ class Sound:
         cls.ThreadLock.acquire()
         wav=cls.PlayQueue.pop(0)
         cls.ThreadLock.release()
-        winsound.PlaySound(wav, winsound.SND_FILENAME)
-
-
+        thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_FILENAME,))
+        thread.start()
+        
     @classmethod
     def PlayWAV(cls,wav_file:str)->None:
         cls.ThreadLock.acquire()
