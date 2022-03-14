@@ -1,4 +1,3 @@
-from itertools import starmap
 import os
 import threading
 import winsound
@@ -7,7 +6,7 @@ sys.path.append('../CHESSBOARD-PROJECT')
 from Event.Event import Event, invoke
 #sys.path.append('../CHESSBOARD-PROJECT')
 MoveWAV = os.getcwd()+u'/GUI_PA/sound/Move.wav'
-CheckWAV = os.getcwd()+u'/GUI_PA/sound/Check.wav'
+CheckWAV = os.getcwd()+u'/GUI_PA/sound/CheckII.wav'
 CaptureWAV = os.getcwd()+u'/GUI_PA/sound/Cap.wav'
 
 class Sound:
@@ -26,7 +25,9 @@ class Sound:
         wav=cls.PlayQueue.pop(0)
         cls.ThreadLock.release()
         thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_FILENAME,))
+        thread.isDaemon=True
         thread.start()
+        #thread.join()
         
     @classmethod
     def PlayWAV(cls,wav_file:str)->None:

@@ -1,12 +1,9 @@
-
 import sys
 from time import sleep
-
-
 sys.path.append('../CHESSBOARD-PROJECT')
 from GUI_PA.Sound import *
 #needs to install Pillow (pip install pillow)
-import Sound
+from Sound import *
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -24,12 +21,15 @@ from ResponseListener.ResponseListener import ResponseListener
 from Interpreter import Interpreter
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
+from Timer import RepeatTimer
 
 class ChessMainForm:
     def __init__(self) -> None:
         self.root=Tk()
         self.canvas = Canvas(self.root, width = 800, height = 600) 
         self.ImageContainer=[]
+        self.AnimationSpeed=.4
+        self.AnimateTimerThread=None
         self.InitializeComponents()
         self.root.mainloop()
 
@@ -91,34 +91,66 @@ class ChessMainForm:
     def MoveNext(self) ->None:
         if not self.gameUUID:
             GUIRequest().getGames()
-        self.HurryUp=True
         self.GetParserNextMove(None)
+
 
     def MovePrevious(self) ->None:
         pass
         # self.ChessBoard.MovePiece(PIECENAME.ROOK.name,Color=COLOR.BLACK.name, ToRow=self.x,ToCol=0)
-    
-    #Triggerec by Move Event from ChessBoard cls
+
+    #Triggered by Checs Engine PromoteEvent
+    def PromotePiece(self):
+        obj=self.ChessBoard.Container[-1]
+        if isinstance(obj,Piece):
+            self.ImageContainer.append(ImageTk.PhotoImage(Image.open(obj.ImageFile)))
+            obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
+                                        ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
+                                        anchor=NW, image=self.ImageContainer[-1]) 
+            
+    #Triggered by Checs Engine CaptureEvent
+    def HidePiece(self,Tag):
+        Sound.PlayWAV(CaptureWAV)
+        self.canvas.itemconfig(Tag, state='hidden') 
+
+    #Triggered by Checs Engine MoveEvent
     def MovePiece(self,*args,**kwargs):
         tag=int(kwargs['Tag'])
         Row=kwargs['ToRow']
         Column=kwargs['ToCol']
-        
         #self.canvas.moveto(tag,ChessBoardOffset+ChessBoardSquareSize*Column,ChessBoardOffset+ChessBoardSquareSize*Row)
         #return
-        self.Pause=False                
         xx=ChessBoardOffset+ChessBoardSquareSize*Column
         yy=ChessBoardOffset+ChessBoardSquareSize*Row
-        self.Thread=threading.Thread(target=self.AnimateMove,kwargs={'tag':tag,'destX':xx,'destY':yy})
-        self.Thread.daemon=True
-        self.Thread.start()
+        Thread=threading.Thread(target=self.AnimateMove,kwargs={'tag':tag,'destX':xx,'destY':yy})
+        Thread.daemon=True
+        Thread.start()
+
+    #Triggered by GetGetNextMoveResponseHandler
+    def OnReadyToMove(self):
+        if self.moveId:
+            self.GameActive=True
+            for item in self.currentMove:
+                self.MakeMove(item)
+        else:
+            self.GameActive=False
+            if self.AnimateTimerThread:
+                self.AnimateTimerThread.stop()
+            messagebox.showinfo(title="Game End", message=self.currentMove)
+            self.ChessBoard.PopulateBoard()
+            self.PopulateBoardIMG()      
+        
 
     def AnimateMove(self,tag,destX,destY):
+        self.Lock.acquire()
         x,y=self.canvas.coords(tag)
+        self.Lock.release()
         dx=destX-x
         dy=destY-y
         slope=0
         toggle=False
+        
+        #raise moving image 
+        self.canvas.tag_raise(tag)
 
         #Calculate slope to find the proper stepX and StepY 
         if dx and dy:
@@ -138,14 +170,8 @@ class ChessMainForm:
                 stepX=1 if dx>0 else -1
             else:
                 stepX=0
-        #print (stepX,stepY)
-        
-        self.Lock.acquire()
-        self.HurryUp=False
-        self.Lock.release()
 
         while x!=destX or y!=destY:
-            if self.HurryUp==True:break
             #make sure to exit the loop if the destinatuon is bypassed when toggling is on
             if slope!=0:
                 if dy>0:
@@ -166,74 +192,38 @@ class ChessMainForm:
                         stepY=0
                         toggle=False
             
-            #print ("x=",x,"y=",y,"stepX=",stepX,"stepY=",stepY,"Slope=",slope,"int(slope)=",int(slope),"dx=",dx,"dy=",dy)
             self.canvas.moveto(tag,(x+stepX),int(y+stepY))
             self.canvas.update()
-            #sleep((1/1000)*.1)  
+            #sleep(self.AnimationSpeed/1000)
             x,y=self.canvas.coords(tag)
 
         self.canvas.moveto(tag,destX,destY)
-        PlayWAV(MoveWAV)
-        # Thread=threading.Thread(target=PlayWAV,args=(MoveWAV,))
-        # Thread.daemon=True
-        # Thread.start()    
-
-
-        sleep((1/1000)*450)        
-
-        # self.Lock.acquire()
-        self.Thread=None
+        Sound.PlayWAV(MoveWAV)
         
-        # self.Lock.release()
-
-
-    def AnimateHide(self,Tag):
-        while self.Thread!=None:
-            sleep(1/1000*100)
-            
-            #print ("waiting to kill ",Tag)
-            pass
-        PlayWAV(CaptureWAV)
-        # Thread=threading.Thread(target=PlayWAV,args=(CaptureWAV,))
-        # Thread.daemon=True
-        # Thread.start()    
-        self.canvas.itemconfig(Tag, state='hidden')
-
-    def test(self):
-        while self.GameActive and self.Pause!=True:
-            while self.Thread!=None:
-                sleep(1/1000*100)
-                #print ("waiting for other thread")
-            #self.root.event_generate("3")
-            self.GetParserNextMove(None)
-            sleep(0.990)  
 
     def PlayGameThread(self):
         self.Pause=False
         if not self.gameUUID:
             GUIRequest().getGames()
-        Thread=threading.Thread(target=self.test)
+
+        self.AnimateTimerThread=RepeatTimer(self.AnimationSpeed,self.StartGameAnimation)
         self.GameActive=True
-        #Setting the Daemon thread to True, makes it live in background when started and terminates when the main thread terminates
-        Thread.daemon=True
-        Thread.start()
+        self.AnimateTimerThread.start()
+        
+        
 
-   
-    
-    def PromotePiece(self):
-        obj=self.ChessBoard.Container[-1]
-        if isinstance(obj,Piece):
-            self.ImageContainer.append(ImageTk.PhotoImage(Image.open(obj.ImageFile)))
-            obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
-                                        ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
-                                        anchor=NW, image=self.ImageContainer[-1]) 
-            
+    def StartGameAnimation(self):
+        if self.GameActive:
+            self.GetParserNextMove(None)
+        else:
+            self.AnimateTimerThread.stop()
 
-    def HidePiece(self,Tag):
-        #self.canvas.itemconfig(Tag, state='hidden')
-        Thread=threading.Thread(target=self.AnimateHide,kwargs={'Tag':Tag})
-        Thread.daemon=True
-        Thread.start()
+    #triggered by pause button
+    def PauseGame(self):
+        if self.AnimateTimerThread:
+            self.AnimateTimerThread.stop()
+
+
 
     def ShowPiece(self,Tag):
         self.canvas.itemconfig(Tag, state='normal')
@@ -298,9 +288,12 @@ class ChessMainForm:
         self.ChessBoard.CaptureEvent+= self.HidePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
         self.Thread=None
+        self.Lock=threading.Lock()
+        self.ThreadCondition=threading.Condition(self.Lock)
+        self.ThreadEvent= threading.Event()
         self.Pause=False
         self.txt=""
-        self.Lock=threading.Lock()
+        
         self.HurryUp=False
 
         self.PopulateBoardIMG()
@@ -359,14 +352,8 @@ class ChessMainForm:
                                         anchor=NW, image=self.ImageContainer[-1]) 
                 print (obj.Tag,self.canvas.coords(obj.Tag))
 
-    def PauseGame(self):
-        self.Pause=True
-        print (self.Pause)
-
     def MakeMove(self,data):
-        #if it's a normal movement then retrieve movement fields
         argNode={}
-        #print(data)
         color=self.player.upper()
 
         #if it's a normal movement then retrieve movement fields
@@ -405,34 +392,25 @@ class ChessMainForm:
             
 
         elif data['actionName']=='Check':
-            PlayWAV(CheckWAV)
-            #Thread=threading.Thread(target=PlayWAV,args=(CheckWAV,))
-            #Thread.daemon=True
-            #Thread.start()    
-            # Thread=threading.Thread(target=playsound(os.getcwd()+'/GUI_PA/sound/chk8.wav'))
-            # Thread.daemon=True
-            # Thread.start()
-            # sleep(1/1000*200)
-        
+            Sound.PlayWAV(CheckWAV)
             
             
 
     def GetParserNextMove(self,event):
-        self.Pause=False
         GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
         
 
-        if self.moveId:
-            self.GameActive=True
-            for item in self.currentMove:
-                self.MakeMove(item)
-                # while self.Thread:
-                #     sleep (.01)
-        else:
-            self.GameActive=False
-            messagebox.showinfo(title="Game End", message=self.currentMove)
-            self.ChessBoard.PopulateBoard()
-            self.PopulateBoardIMG()
+        # if self.moveId:
+        #     self.GameActive=True
+        #     for item in self.currentMove:
+        #         self.MakeMove(item)
+        # else:
+        #     self.GameActive=False
+        #     if self.AnimateTimerThread.isActive:
+        #         self.AnimateTimerThread.stop()
+        #     messagebox.showinfo(title="Game End", message=self.currentMove)
+        #     self.ChessBoard.PopulateBoard()
+        #     self.PopulateBoardIMG()
  
         
     def UpdateBoard(self)->None:
@@ -494,14 +472,16 @@ class ChessMainForm:
         print(self.rawMoves)
     
     def GetGetNextMoveResponseHandler(self, response):
-        
         self.currentMove = response['nextMove']
         self.moveId = response['nextMoveId']
         self.player = response['nextPlayer']
         print('currentMove:', self.currentMove)
         print('moveId: ', self.moveId)
         print('player: ', self.player)
+        self.OnReadyToMove()
         
+
+  
 
 
     def interpreterErrorResponseHandler(self, response):
