@@ -1,5 +1,4 @@
 from ChessPiece import King,Queen,Rook,Knight,Bishop,Pawn,COLOR,PIECENAME
-
 class Board:
     def __init__(self) -> None:
         self.Container=[]
@@ -12,7 +11,7 @@ class Board:
         # self.PromoteEvent+=self.PrinBoard
 
     @staticmethod
-    def fileRanktoRowCol(cls,fileRank:str)-> tuple[int,int]:
+    def fileRanktoRowCol(cls,fileRank:str) -> 'tuple[int,int]':
         return (int(fileRank[1])-1,int(ord(fileRank[0])-97))
 
     @property        

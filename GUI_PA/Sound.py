@@ -1,8 +1,8 @@
 import os
 import threading
-import winsound
 import sys
-sys.path.append('../CHESSBOARD-PROJECT')
+from playsound import playsound
+sys.path.append('../chessboard-project')
 from Event.Event import Event, invoke
 MoveWAV = os.getcwd()+u'/GUI_PA/sound/Move.wav'
 CheckWAV = os.getcwd()+u'/GUI_PA/sound/CheckII.wav'
@@ -22,7 +22,7 @@ class Sound:
         cls.ThreadLock.acquire()
         wav=cls.PlayQueue.pop(0)
         cls.ThreadLock.release()
-        thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_FILENAME,))
+        thread=threading.Thread(target=playsound,args=(wav,))
         thread.isDaemon=True
         thread.start()
         #thread.join()
