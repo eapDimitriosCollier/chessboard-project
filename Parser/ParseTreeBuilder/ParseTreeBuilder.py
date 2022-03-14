@@ -5,7 +5,7 @@ from Lexer.Lexer import Lexer
 import re
 
 ## Η γραμματική του PGN εκφρασμένη σε BNF. 
-#TODO: Add source
+#: Add source
 ## Την γραμματική την βρήκαμε στο 
 
 # <PGN-database>:= <PGN-game> <PGN-database>
@@ -30,10 +30,6 @@ import re
 #                        *
 # <empty>:=
 
-## TODO: Make all Exceptions, "UnknownParserError"s
-
-        
-
 # Κλάσεις για διαχείρηση σφαλμάτων
 
 class ParseError(Exception):
@@ -41,12 +37,13 @@ class ParseError(Exception):
         super().__init__(f'ParseError: {message}')
 
 class SyntaxError(ParseError):
-    def __init__(self, tokenIndex: int, line: int, position: int, expected: str = '', got: str = '') -> None:
+    def __init__(self, tokenIndex: int, line: int, position: int,  errorMessage: str = '', expected: str = '', got: str = '') -> None:
+        self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}).'
+        
         if expected and got: 
-            self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}). Expected {expected}, got {got}'
-        else:
-            self.message = f'SyntaxError on token #{tokenIndex} (Line: {line}, Position: {position}).'
+            errorMessage = f'Expected {expected}, got {got}' 
             
+        self.message = self.message, ' ', errorMessage
         super().__init__(self.message)
 
 class LogicError(ParseError):
@@ -56,17 +53,15 @@ class LogicError(ParseError):
 
 class ParseTreeBuilder:
     """Απλή υλοποίηση ενός Recursive Descent Parser"""
-    def __init__(self, Lexer: Lexer):
+    def __init__(self, Lexer: Lexer) -> None:
         self.Lexer = Lexer
         self.usedTagIdentifiers = set()
         self.parseTree = None
 
-# Μέθοδοι για το διάβασμα token από τον Lexer
-# TODO: Add "Unexpected end of file exception"
     def nextToken(self) -> None:
         self.Lexer.MoveNext()
-        token = self.Lexer.GetToken
-
+        token = self.currentToken()
+        
         if (token['token_type'] == 'COMMENT'):
             self.nextToken()
 
@@ -77,12 +72,12 @@ class ParseTreeBuilder:
     def expectType(self, expectedTokenType: str) -> None:
         currentToken = self.currentToken()
         if (currentToken['token_type'] != expectedTokenType):
-            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], expectedTokenType, currentToken['token_type'])            
+            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], '', expectedTokenType, currentToken['token_type'])            
 
     def expectValue(self, expectedTokenValue: str) -> None:
         currentToken = self.currentToken()
         if (currentToken['token_value'] != expectedTokenValue):
-            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], expectedTokenValue, currentToken['token_value'])      
+            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], '', expectedTokenValue, currentToken['token_value'])      
  
     def maybe(self, possibleProductionRules: list) -> None:
         """Μέθοδος που εκτελεί τους γραμματικούς κανόνες έναν έναν.
@@ -234,7 +229,7 @@ class ParseTreeBuilder:
         self.expectType('EXPRESSION')
         SANMoveRegEx = r"(..)?([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQK])?(\+|#)?$|^O-O(-O)?"
         if (not re.match(SANMoveRegEx, currentToken['token_value'])):
-            raise SyntaxError('Invalid move', currentToken['Line'], currentToken['Position'],  currentToken['token_value'])
+            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], 'Invalid move')
 
     def NumericAnnotationGlyph(self) -> None:
         currentToken = self.currentToken()
@@ -242,7 +237,7 @@ class ParseTreeBuilder:
         self.parseTree.insertNode(ParseNode('NumericAnnotationGlyph', currentToken)) 
         NAGRegEx = r"\$[1-255]"
         if (not re.fullmatch(NAGRegEx, currentToken['token_value'])):
-            raise SyntaxError('Invalid NAG', currentToken['Line'], currentToken['Position'], currentToken['token_value'])
+            raise SyntaxError(self.Lexer.index, currentToken['Line'], currentToken['Position'], 'Invalid NAG')
 
     def RecursiveVariation(self) -> None:
         self.parseTree.insertNode(ParseNode('RecursiveVariation'))

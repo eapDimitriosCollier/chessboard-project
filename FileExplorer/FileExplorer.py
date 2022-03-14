@@ -15,6 +15,6 @@ class FileExplorer:
         
         return self.dataFile
 
-# # How to use:
+# # How to use: 
 
 #     print(FileExplorer().open())

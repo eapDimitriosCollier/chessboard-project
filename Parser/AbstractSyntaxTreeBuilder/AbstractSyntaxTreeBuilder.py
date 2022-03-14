@@ -177,11 +177,7 @@ class AbstractSyntaxTreeBuilder:
         
         # Check for Movement, Promotion, Castle
         # Ο έλεγχος για την εγκυρότητα του SANMove έχει γίνει ήδη από το ParseTree.
-        
-        #TODO: Assert that each player can only castle once
-        # can promote 8 times and a checkmate can occur only once per game
-        #TODO: Refactor
-        
+                
         if 'O' in sanMove:
             actionStack.append('Castle')
         else:
@@ -231,10 +227,19 @@ class AbstractSyntaxTreeBuilder:
         
         # Τώρα υπάρχουν τρεις περιπτώσεις,
         # Ή το sanMove είναι κενό, ή έχει 1 χαρακτήρα ή έχει 2 χαρακτήρες.
-        if len(sanMove) >= 1:
+        if len(sanMove) == 1:
+            # Δεν μπορούμε να ξέρουμε αν το sanMove[0] αναφέρεται σε row ή σε column επειδή
+            # δεν έχουμε αρκετές πληροφορίες, οπότε το βρίσκουμε κοιτόντας αν το ο χαρακτληρας είναι
+            # αριθμός ή όχι. (R5a4, Rfa1)
+            if sanMove[0].isdigit():
+                result["fromRow"] = sanMove[0]
+            else:
+                result["fromColumn"] = sanMove[0]
+        elif len(sanMove) == 2:
+            # Σε αυτή όμως την περίπτωση, ξέρουμε ότι πάντα ο πρώτος χαρακτήρας είναι το column,
+            # και ο δεύτρος το row.
             result["fromColumn"] = sanMove[0]
-            if len(sanMove) == 2:
-                result["fromRow"] = sanMove[1] 
+            result["fromRow"] = sanMove[1] 
                 
         return result        
     
