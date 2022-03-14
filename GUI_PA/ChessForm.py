@@ -183,11 +183,16 @@ class ChessMainForm:
 
     #MenuItem File_Open
     def FileDialog(self):
+        if self.AnimateTimerThread:
+            self.AnimateTimerThread.stop()
+        sleep(1)
         PgnString=FileExplorer().open()
         print (PgnString)
         self.txt=PgnString
         self.interpreter = Interpreter(PgnString)
+        self.ChessBoard.PopulateBoard()
         self.PopulateBoardIMG()
+    
         
         
 
@@ -305,6 +310,7 @@ class ChessMainForm:
                                         ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
                                         anchor=NW, image=self.ImageContainer[-1]) 
                 print (obj.Tag,self.canvas.coords(obj.Tag))
+        self.canvas.update()
 
     def MakeMove(self,data):
         argNode={}
