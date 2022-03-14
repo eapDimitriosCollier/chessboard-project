@@ -11,7 +11,7 @@ CaptureWAV = os.getcwd()+u'/GUI_PA/sound/Cap.wav'
 class Sound:
     PlayQueue=[]
     ThreadLock=threading.Lock()
-    IsInit=False
+    isInit=False
 
     @classmethod
     def onWavInQueue(cls,event):
@@ -31,9 +31,9 @@ class Sound:
     @classmethod
     def PlayWAV(cls,wav_file:str)->None:
         cls.ThreadLock.acquire()
-        if not getattr(cls,"IsInit"):
+        if not getattr(cls,"isInit"):
             Event('WavInQueue').subscribe(cls)
-            setattr(cls,"IsInit",True)
+            setattr(cls,"isInit",True)
         cls.PlayQueue.append(wav_file)
         cls.ThreadLock.release()
         Event('WavInQueue').invoke()        
