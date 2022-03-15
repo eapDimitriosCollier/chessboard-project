@@ -24,7 +24,7 @@ class ChessMainForm:
         self.root=Tk()
         self.canvas = Canvas(self.root, width = 800, height = 600) 
         self.ImageContainer=[]
-        self.AnimationSpeed=.5
+        self.AnimationSpeed=1
         self.AnimateTimerThread=None
         self.InitializeComponents()
         self.root.mainloop()
@@ -39,7 +39,6 @@ class ChessMainForm:
             print (item)
             
 
-    #https://www.pythontutorial.net/tkinter/tkinter-treeview/        
     def CreateTree(self):
         from treeGrid import CreateTree
         Grid=CreateTree(self)
@@ -84,7 +83,7 @@ class ChessMainForm:
         Thread.start()
 
     #Triggered by onResponse.GetGetNextMoveResponseHandler
-    def OnReadyToMove(self):
+    def onReadyToMove(self,event):
         if self.moveId:
             self.GameActive=True
             for item in self.currentMove:
@@ -166,6 +165,9 @@ class ChessMainForm:
         self.AnimateTimerThread=RepeatTimer(self.AnimationSpeed,self.StartGameAnimation)
         self.GameActive=True
         self.AnimateTimerThread.start()
+        self.MoveNextBtn['state']="disable"
+        self.MovePreviousBtn['state']="disable"
+
         
     def StartGameAnimation(self):
         if self.GameActive:
@@ -177,6 +179,8 @@ class ChessMainForm:
     def PauseGame(self):
         if self.AnimateTimerThread:
             self.AnimateTimerThread.stop()
+        self.MoveNextBtn['state']="normal"
+        self.MovePreviousBtn['state']="normal"
 
     def ShowPiece(self,Tag):
         self.canvas.itemconfig(Tag, state='normal')
@@ -187,13 +191,10 @@ class ChessMainForm:
             self.AnimateTimerThread.stop()
         sleep(1)
         PgnString=FileExplorer().open()
-        print (PgnString)
         self.txt=PgnString
-        self.interpreter = Interpreter(PgnString)
         self.ChessBoard.PopulateBoard()
         self.PopulateBoardIMG()
-    
-        
+        self.interpreter=Interpreter(PgnString)       
         
 
     def CreateMenuBar(self)->None:
@@ -235,11 +236,16 @@ class ChessMainForm:
         self.previous_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/previous.png"))
         self.play_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/play.png"))
         self.pause_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/pause.png"))
-        MovePreviousBtn = self.canvas.create_window(650, 550, anchor='nw', window=Button(self.root,image=self.previous_icon,command=self.MovePrevious))
-        MoveNextBtn = self.canvas.create_window(700, 550, anchor='nw', window=Button(self.root,image=self.next_icon,command=self.MoveNext) )
-        PlayBtn = self.canvas.create_window(750, 550, anchor='nw', window=Button(self.root,image=self.play_icon,command=self.PlayGameThread))
+        self.MovePreviousBtn = Button(self.root,image=self.previous_icon,command=self.MovePrevious)
+        self.MoveNextBtn = Button(self.root,image=self.next_icon,command=self.MoveNext) 
+        self.PlayBtn=Button(self.root,image=self.play_icon,command=self.PlayGameThread,state='normal')
+        self.canvas.create_window(650, 550, anchor='nw', window=self.MovePreviousBtn)
+        self.canvas.create_window(700, 550, anchor='nw', window=self.MoveNextBtn)
+        self.canvas.create_window(750, 550, anchor='nw', window=self.PlayBtn)
         PauseBtn = self.canvas.create_window(800, 550, anchor='nw',window=Button(self.root,image=self.pause_icon,command=self.PauseGame))
         self.canvas.pack()
+        
+
 
         #Create the checssboard and subscribe to the MovingEvent
         self.ChessBoard=Board()
@@ -256,25 +262,8 @@ class ChessMainForm:
         self.HurryUp=False
 
         self.PopulateBoardIMG()
-        # for obj in self.ChessBoard.Container:
-        #     if isinstance(obj,Piece):
-        #         self.ImageContainer.append(ImageTk.PhotoImage(Image.open(obj.ImageFile)))
-        #         obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
-        #                                 ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
-        #                                 anchor=NW, image=self.ImageContainer[-1]) 
-        #         print (obj.Tag,self.canvas.coords(obj.Tag))
 
-
-    
-        # self.ChessBoard.CapturePiece(1,0)
-        # self.ChessBoard.CapturePiece(0,6)
-        # self.ChessBoard.CapturePiece(0,5)
-        # self.ChessBoard.KingKastling(COLOR.BLACK.name)      
-        # self.ChessBoard.CapturePiece(7,1)
-        # self.ChessBoard.CapturePiece(7,2)
-        # self.ChessBoard.CapturePiece(7,3)
-        # self.ChessBoard.QueenKastling(COLOR.WHITE.name)
-        #self.UpdateBoard()                        
+                
         self.canvas.pack(side="left")
         self.CreateMenuBar()
         self.CreateTree()
@@ -287,15 +276,9 @@ class ChessMainForm:
         self.player = None
         self.currentMove = []
         self.GameActive=False
-        
-        # self.root.bind('<space>', lambda e : GUIRequest().getGames())
-        # self.root.bind('1', lambda e: GUIRequest().getTags(self.gameUUID))
-        # self.root.bind('2', lambda e: GUIRequest().getRawMoves(self.gameUUID))
-        # #self.root.bind('3', lambda e: GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player))
-        # self.root.bind('3', self.GetParserNextMove)
-        
         # Get File...
         #...
+        Event('ReadyToMove').subscribe(self)
         self.interpreterInit()
 
     def PopulateBoardIMG(self)->None:
@@ -336,7 +319,7 @@ class ChessMainForm:
             else:
                 self.ChessBoard.MovePiece(piece,Color=color,ToRow=toRow,ToCol=toCol,FromRow=fromRow,FromCol=fromColumn,Capture=False)
                     
-        #if it is a Catle move then check its type
+        #if it is a Castle move then check its type
         elif data['actionName']=='Castle':
             argNode=data['arguments']
             castleType=argNode['type'].upper()
@@ -358,11 +341,13 @@ class ChessMainForm:
     def GetParserNextMove(self,event):
         GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
 
-        
-    def UpdateBoard(self)->None:
-        for obj in self.ChessBoard.Container:
-            if isinstance(obj,Piece):
-                self.MovePiece(ToRow=obj.Position.Row,ToCol=obj.Position.Col,Tag=obj.Tag) 
+    def GetParserFirstMove(self,event):
+        GUIRequest().getNextMove(self.gameUUID)
+
+    # def UpdateBoard(self)->None:
+    #     for obj in self.ChessBoard.Container:
+    #         if isinstance(obj,Piece):
+    #             self.MovePiece(ToRow=obj.Position.Row,ToCol=obj.Position.Col,Tag=obj.Tag) 
 
     def interpreterInit(self) -> None:
         # Initialize events
@@ -382,8 +367,9 @@ class ChessMainForm:
         
     def onInterpretationEnded(self, event):
         print('Interpretation Ended')
- 
-
+        GUIRequest().getGames()
+        self.GetParserFirstMove(event)
+        
 
     
     def onInterpretationFailed(self, event):
@@ -402,7 +388,8 @@ class ChessMainForm:
                 self.GetRawMovesResponseHandler(response._response)
             elif (response._request._type == "GET_NEXT_MOVE"):
                 self.GetGetNextMoveResponseHandler(response._response)
-                self.OnReadyToMove()
+                
+
             
     def onErrorResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
@@ -411,7 +398,8 @@ class ChessMainForm:
     def GetGamesResponseHandler(self, response):
         self.games = response
         self.gameUUID = self.games[0]
-        print(self.gameUUID)
+        #GUIRequest().getNextMove(self.gameUUID)
+        
     
     def GetTagsResponseHandler(self, response):
         self.tags = response
@@ -425,9 +413,10 @@ class ChessMainForm:
         self.currentMove = response['nextMove']
         self.moveId = response['nextMoveId']
         self.player = response['nextPlayer']
-        # print('currentMove:', self.currentMove)
-        # print('moveId: ', self.moveId)
-        # print('player: ', self.player)
+        print('currentMove:', self.currentMove)
+        print('moveId: ', self.moveId)
+        print('player: ', self.player)
+        Event('ReadyToMove').invoke()  
         
 
 
