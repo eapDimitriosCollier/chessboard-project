@@ -14,6 +14,7 @@ class Sound:
     PlayQueue=[]
     ThreadLock=threading.Lock()
     isInit=False
+    SoundON=True # turn to false to disable sound
 
     @classmethod
     def onWavInQueue(cls,event):
@@ -24,29 +25,35 @@ class Sound:
         cls.ThreadLock.acquire()
         wav=cls.PlayQueue.pop(0)
         cls.ThreadLock.release()
-        thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_FILENAME,))
+        if wav==CheckWAV:
+                thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_FILENAME )) #winsound.SND_FILENAME
+        else:
+            thread=threading.Thread(target=winsound.PlaySound,args=(wav, winsound.SND_ASYNC )) #winsound.SND_FILENAME
         thread.isDaemon=True
         thread.start()
-        #thread.join()
+        
         
     @classmethod
     def PlayWAV(cls,wav_file:str)->None:
-        cls.ThreadLock.acquire()
-        if not getattr(cls,"isInit"):
-            Event('WavInQueue').subscribe(cls)
-            setattr(cls,"isInit",True)
-        cls.PlayQueue.append(wav_file)
-        cls.ThreadLock.release()
-        Event('WavInQueue').invoke()        
+        if cls.SoundON:
+            cls.ThreadLock.acquire()
+            if not getattr(cls,"isInit"):
+                Event('WavInQueue').subscribe(cls)
+                setattr(cls,"isInit",True)
+            cls.PlayQueue.append(wav_file)
+            cls.ThreadLock.release()
+            Event('WavInQueue').invoke()        
         
 
 if __name__ == '__main__':
-    for _ in range(10):
-        thread=threading.Thread(target=Sound.PlayWAV,args=(MoveWAV,))
-        thread.start()
+    for _ in range(1):
         thread=threading.Thread(target=Sound.PlayWAV,args=(CheckWAV,))
         thread.start()
-        thread=threading.Thread(target=Sound.PlayWAV,args=(CaptureWAV,))
+        thread=threading.Thread(target=Sound.PlayWAV,args=(MoveWAV,))
         thread.start()
+        thread=threading.Thread(target=Sound.PlayWAV,args=(PromoteWAV,))
+        thread.start()
+        
+
     
 
