@@ -6,6 +6,7 @@ class Board:
         self.MovingEvent=ChessEvent()
         self.CaptureEvent=ChessEvent()
         self.PromoteEvent=ChessEvent()
+        self.HideEvent=ChessEvent()
         # self.MovingEvent+=self.PrinBoard
         # self.CaptureEvent+=self.PrinBoard
         # self.PromoteEvent+=self.PrinBoard
@@ -85,10 +86,19 @@ class Board:
         else:
             raise Exception (f"No piece at ({Row},{Col})")    
 
-        
+    def HidePiece(self, Row:int,Col:int)-> None:
+        for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col )]:
+            #item.IsVisible=False
+            self.Container.pop(self.Container.index(item))
+            self.HideEvent(Tag=item.Tag)
+            break
+        else:
+            raise Exception (f"No piece at ({Row},{Col})")    
+
     def PromotePiece(self,Row:int,Col:int,Piece:str,Color:COLOR)-> None:
         for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col)]:
-            self.CapturePiece(Row,Col)
+            #self.CapturePiece(Row,Col)
+            #self.HidePiece(Row,Col)
             color=COLOR.BLACK if Color=='BLACK' else COLOR.WHITE
 
             #item.IsVisible=False
@@ -110,7 +120,9 @@ class Board:
             if Piece==PIECENAME.PAWN.name:
                 self.Container.append(Pawn(Color=color,Row=Row,Column=Col))
             
+            self.HidePiece(Row=Row,Col=Col)
             self.PromoteEvent()
+            
             break
         else:
             raise Exception (f"No piece at ({Row},{Col})")      

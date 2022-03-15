@@ -66,9 +66,14 @@ class ChessMainForm(ResponseListener):
             obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
                                         ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
                                         anchor=NW, image=self.ImageContainer[-1]) 
+        Sound.PlayWAV(PromoteWAV)
             
     #Triggered by Checs Engine CaptureEvent
     def HidePiece(self,Tag):
+        self.canvas.itemconfig(Tag, state='hidden') 
+
+    #Triggered by Checs Engine CaptureEvent
+    def CapturePiece(self,Tag):
         Sound.PlayWAV(CaptureWAV)
         self.canvas.itemconfig(Tag, state='hidden') 
 
@@ -255,8 +260,9 @@ class ChessMainForm(ResponseListener):
         #Create the checssboard and subscribe to the MovingEvent
         self.ChessBoard=Board()
         self.ChessBoard.MovingEvent+= self.MovePiece
-        self.ChessBoard.CaptureEvent+= self.HidePiece
+        self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
+        self.ChessBoard.HideEvent+= self.HidePiece
         self.Thread=None
         self.Lock=threading.Lock()
         self.ThreadCondition=threading.Condition(self.Lock)
