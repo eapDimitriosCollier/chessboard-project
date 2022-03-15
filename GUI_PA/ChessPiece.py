@@ -1,5 +1,5 @@
 from enum import Enum,unique
-from ChessConstants import *
+from ChessFormConstants import ImagePath
 
 @unique
 class COLOR(Enum):

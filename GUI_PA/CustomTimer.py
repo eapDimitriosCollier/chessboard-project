@@ -1,5 +1,5 @@
 import threading
-class RepeatTimer(threading.Timer):  
+class RepeativeTimer(threading.Timer):  
     def __init__(self, interval, function, args=None, kwargs=None):
         super().__init__(interval, function, args, kwargs)
         self.__isActive=True
@@ -23,7 +23,7 @@ def PrintMsg(str):
     print (str,"\n")
 
 if __name__ == '__main__':
-    RT=RepeatTimer(1,PrintMsg,("this is a message",))
+    RT=RepeativeTimer(1,PrintMsg,("this is a message",))
     RT.start()
     
     for _ in range(10):

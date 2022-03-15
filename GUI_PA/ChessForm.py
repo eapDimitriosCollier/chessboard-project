@@ -8,7 +8,7 @@ from tkinter import ttk,messagebox
 from PIL import ImageTk,Image
 from ChessPiece import Rook,Knight,Bishop,King,Queen,Pawn,Piece
 from ChessEngine import Board,PIECENAME,COLOR
-from ChessConstants import *
+from ChessFormConstants import *
 from FileExplorer.FileExplorer import FileExplorer
 from Lexer.sample_game import txt
 from Event.Event import Event
@@ -17,7 +17,7 @@ from ResponseListener.ResponseListener import ResponseListener
 from Interpreter import Interpreter
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
-from CustomTimer import RepeatTimer,threading
+from CustomTimer import RepeativeTimer,threading
 
 class ChessMainForm(ResponseListener):
     def __init__(self) -> None:
@@ -165,7 +165,7 @@ class ChessMainForm(ResponseListener):
         if not self.gameUUID:
             GUIRequest().getGames()
 
-        self.AnimateTimerThread=RepeatTimer(self.AnimationSpeed,self.StartGameAnimation)
+        self.AnimateTimerThread=RepeativeTimer(self.AnimationSpeed,self.StartGameAnimation)
         self.GameActive=True
         self.AnimateTimerThread.start()
         self.MoveNextBtn['state']="disable"
