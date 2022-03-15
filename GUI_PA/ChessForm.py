@@ -19,7 +19,7 @@ from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
 from CustomTimer import RepeatTimer,threading
 
-class ChessMainForm:
+class ChessMainForm(ResponseListener):
     def __init__(self) -> None:
         self.root=Tk()
         self.canvas = Canvas(self.root, width = 800, height = 600) 
@@ -46,9 +46,12 @@ class ChessMainForm:
 
     
     def MoveNext(self) ->None:
+        #self.MoveNextBtn['state']='disable'
         if not self.gameUUID:
             GUIRequest().getGames()
         self.GetParserNextMove(None)
+        #self.MoveNextBtn['state']='normal'
+        
 
 
     def MovePrevious(self) ->None:
@@ -167,6 +170,7 @@ class ChessMainForm:
         self.AnimateTimerThread.start()
         self.MoveNextBtn['state']="disable"
         self.MovePreviousBtn['state']="disable"
+        self.PlayBtn['state']="disable"
 
         
     def StartGameAnimation(self):
@@ -181,6 +185,7 @@ class ChessMainForm:
             self.AnimateTimerThread.stop()
         self.MoveNextBtn['state']="normal"
         self.MovePreviousBtn['state']="normal"
+        self.PlayBtn['state']="normal"
 
     def ShowPiece(self,Tag):
         self.canvas.itemconfig(Tag, state='normal')
@@ -259,7 +264,6 @@ class ChessMainForm:
         self.Pause=False
         self.txt=""
         
-        self.HurryUp=False
 
         self.PopulateBoardIMG()
 
@@ -312,7 +316,6 @@ class ChessMainForm:
 
             self.Row=toRow
             self.Column=toCol
-            self.HurryUp=True
         
             if capture=='True':    
                 self.ChessBoard.MovePiece(piece,Color=color,ToRow=toRow,ToCol=toCol,FromRow=fromRow,FromCol=fromColumn,Capture=True)
@@ -379,6 +382,7 @@ class ChessMainForm:
         if (isinstance(response, InterpreterResponse)):
             # Θα ήταν ωραίο να παίζαμε με match-case αντί για if, αλλά για backwards compatibility
             # ας το αφήσουμε καλύτερα...
+            print (Response)
             
             if (response._request._type == "GET_GAMES"):
                 self.GetGamesResponseHandler(response._response)
@@ -418,7 +422,6 @@ class ChessMainForm:
         print('player: ', self.player)
         Event('ReadyToMove').invoke()  
         
-
 
     def interpreterErrorResponseHandler(self, response):
         # Αν ο interpreter πετάξει error το παρουσιάζουμε στην οθόνη.

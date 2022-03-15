@@ -3,9 +3,9 @@ class Board:
     def __init__(self) -> None:
         self.Container=[]
         self.PopulateBoard()
-        self.MovingEvent=Event()
-        self.CaptureEvent=Event()
-        self.PromoteEvent=Event()
+        self.MovingEvent=ChessEvent()
+        self.CaptureEvent=ChessEvent()
+        self.PromoteEvent=ChessEvent()
         # self.MovingEvent+=self.PrinBoard
         # self.CaptureEvent+=self.PrinBoard
         # self.PromoteEvent+=self.PrinBoard
@@ -168,7 +168,7 @@ class Board:
                 print(item,end= "\t")
             print()    
 
-class Event:
+class ChessEvent:
     def __init__(self):
         self.__eventhandlers = []
  
@@ -191,12 +191,6 @@ if __name__ == '__main__':
     ChessBoard=Board()
     ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
     ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
-    #ChessBoard.MovingEvent+= ChessBoard.PrinBoard
-
-
+    ChessBoard.MovingEvent+= ChessBoard.PrinBoard
     ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=3,FromRow=None,FromCol=None,Capture=False)
-    
-    quit() 
-
-    ChessBoard.CapturePiece(1,0)
 
