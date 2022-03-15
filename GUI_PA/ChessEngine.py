@@ -1,19 +1,26 @@
+
 from ChessPiece import King,Queen,Rook,Knight,Bishop,Pawn,COLOR,PIECENAME
+from ChessPiece import Piece,BlackUnicodes,WhiteUnicodes
 class Board:
     def __init__(self) -> None:
         self.Container=[]
+        self.Log=[]
+        self._MoveId=0
         self.PopulateBoard()
+        self.UpDateLog()
         self.MovingEvent=ChessEvent()
         self.CaptureEvent=ChessEvent()
         self.PromoteEvent=ChessEvent()
         self.HideEvent=ChessEvent()
-        # self.MovingEvent+=self.PrinBoard
-        # self.CaptureEvent+=self.PrinBoard
-        # self.PromoteEvent+=self.PrinBoard
+
 
     @staticmethod
     def fileRanktoRowCol(cls,fileRank:str) -> 'tuple[int,int]':
         return (int(fileRank[1])-1,int(ord(fileRank[0])-97))
+
+    @property
+    def MoveId(self):
+        return self._MoveId
 
     @property        
     def UnicodeBoard(self)->list:
@@ -47,10 +54,57 @@ class Board:
         self.Container.append(Rook(Color=COLOR.WHITE,Row=7,Column=7))    
         print(len(self.Container))
 
+    def UpDateLog(self)->None:
+        self.Log.append(self.UnicodeBoard)
+        
+    def PopState(self)->None:
+        if len(self.Log)>1:
+            self.Container.clear()
+            self.Log.pop()
+            lastState=self.Log[-1]
+            for row in range(0,8):
+                for column in range(0,8):
+                    uniTable=lastState
+                    uniItem=uniTable[row][column]
+                    if uniItem==BlackUnicodes[0]:
+                        self.Container.append(King(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==BlackUnicodes[1]:
+                        self.Container.append(Queen(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==BlackUnicodes[2]:
+                        self.Container.append(Rook(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==BlackUnicodes[3]:
+                        self.Container.append(Bishop(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==BlackUnicodes[4]:
+                        self.Container.append(Knight(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==BlackUnicodes[5]:
+                        self.Container.append(Pawn(Color=COLOR.BLACK,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[0]:
+                        self.Container.append(King(Color=COLOR.WHITE,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[1]:
+                        self.Container.append(Queen(Color=COLOR.WHITE,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[2]:
+                        self.Container.append(Rook(Color=COLOR.WHITE,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[3]:
+                        self.Container.append(Bishop(Color=COLOR.WHITE,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[4]:
+                        self.Container.append(Knight(Color=COLOR.WHITE,Row=row,Column=column))
+                    if uniItem==WhiteUnicodes[5]:
+                        self.Container.append(Pawn(Color=COLOR.WHITE,Row=row,Column=column))
+
+                    # for piece in self.Container:
+                    #     if isinstance(piece,Piece):
+                    #         if piece.Unicode==uniItem:
+                    #             color=piece.Color
+                    #             tag=piece.Tag
+                    #             if row!=piece.Position.Row or column!=piece.Position.Row:
+                    #                 piece.Position.Row=row
+                    #                 piece.Position.Column=column
+                                
 
     def MovePiece(self, Piece:str,Color:str, ToRow:int,ToCol:int,FromRow:int=None,FromCol:int=None, Capture:bool=False)-> None:
         tag=""
         tmpItem=0
+        self._MoveId+=1
         if Capture:
             for item in [piece for piece in self.Container if (piece.Position.Row==ToRow and piece.Position.Col==ToCol )]:
                 tmpItem=item
@@ -76,6 +130,7 @@ class Board:
         if Capture:
             self.Container.pop(self.Container.index(tmpItem))
             self.CaptureEvent(Tag=tmpItem.Tag)
+        self.UpDateLog()
  
     def CapturePiece(self, Row:int,Col:int)-> None:
         for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col )]:
@@ -164,7 +219,7 @@ class Board:
         self.MovingEvent( PIECENAME.KING.name,Color,ToRow=tmpKing.Position.Row,ToCol=tmpKing.Position.Col,Tag=tmpKing.Tag)#FromCol=4
 
     
-    def PrinBoard(self,*args,**kwargs):
+    def PrintBoard(self,*args,**kwargs):
         print("",end= "\t")     
         i=0       
         for a in range(ord("a"),ord("h")+1):
@@ -201,8 +256,14 @@ class ChessEvent:
 
 if __name__ == '__main__':
     ChessBoard=Board()
-    ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
-    ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
-    ChessBoard.MovingEvent+= ChessBoard.PrinBoard
+    #ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
+    #ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
+    ChessBoard.MovingEvent+= ChessBoard.PrintBoard
     ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=3,FromRow=None,FromCol=None,Capture=False)
+    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=1,FromRow=None,FromCol=None,Capture=False)
+    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=2,FromRow=None,FromCol=None,Capture=False)
+    ChessBoard.PopState()
+    ChessBoard.PrintBoard()
+    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=2,FromRow=None,FromCol=None,Capture=False)
 
+print (BlackUnicodes)

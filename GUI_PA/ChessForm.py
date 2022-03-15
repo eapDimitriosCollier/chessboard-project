@@ -24,10 +24,15 @@ class ChessMainForm(ResponseListener):
         self.root=Tk()
         self.canvas = Canvas(self.root, width = 800, height = 600) 
         self.ImageContainer=[]
-        self.AnimationSpeed=1
+        self.Animation=True
+        self.AnimationSpeed=.8
         self.AnimateTimerThread=None
+        Sound.SoundON=True
+        self.Log={}
+        self.Counter=0
         self.InitializeComponents()
         self.root.mainloop()
+        
 
     def DoNothing(self):
         pass
@@ -52,13 +57,40 @@ class ChessMainForm(ResponseListener):
         self.GetParserNextMove(None)
         #self.MoveNextBtn['state']='normal'
         
-
-
     def MovePrevious(self) ->None:
-        pass
+        print (self.player)        
+        if self.moveId:
+            if self.player=="white":
+                if int(self.moveId)>1:
+                    self.player="black"
+                    self.ChessBoard.PopState()
+                    self.moveId=str(int(self.moveId)-1)
+            else:
+                self.ChessBoard.PopState()
+                self.player="white"
+            
+                          
+        self.PopulateBoardIMG()
+        #GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
+        return
+        #self.ChessBoard.MovePiece(piece,Color=color,ToRow=toRow,ToCol=toCol,FromRow=fromRow,FromCol=fromColumn,Capture=False)
+        x=self.Log[self.Counter]
+        piece,color,toRow,toCol,fromRow,fromColumn,capture =self.Log[self.Counter]
+        print ()
+        #for piece,color,toRow,toCol,fromRow,fromColumn,capture in self.Log[self.Counter]#=(piece,color,toRow,toCol,fromRow,fromColumn,capture)        
+        self.MovePiece(Tag='29',ToRow=5,ToCol=5)
+        return
+        #print (self.ChessBoard.UnicodeBoard)
+        for obj in self.ChessBoard.Container:
+            if isinstance(obj,Piece):
+                tag=obj.Tag
+                Row=obj.Position.Row
+                Col=Row=obj.Position.Col
+                self.MovePiece(Tag=tag,ToRow=Row,ToCol=Col)
+        
         # self.ChessBoard.MovePiece(PIECENAME.ROOK.name,Color=COLOR.BLACK.name, ToRow=self.x,ToCol=0)
 
-    #Triggered by Checs Engine PromoteEvent
+    #Triggered by Chess Engine PromoteEvent
     def PromotePiece(self):
         obj=self.ChessBoard.Container[-1]
         if isinstance(obj,Piece):
@@ -68,34 +100,38 @@ class ChessMainForm(ResponseListener):
                                         anchor=NW, image=self.ImageContainer[-1]) 
         Sound.PlayWAV(PromoteWAV)
             
-    #Triggered by Checs Engine CaptureEvent
+    #Triggered by Chess Engine CaptureEvent
     def HidePiece(self,Tag):
         self.canvas.itemconfig(Tag, state='hidden') 
 
-    #Triggered by Checs Engine CaptureEvent
+    #Triggered by Chess Engine CaptureEvent
     def CapturePiece(self,Tag):
         Sound.PlayWAV(CaptureWAV)
         self.canvas.itemconfig(Tag, state='hidden') 
 
-    #Triggered by Checs Engine MoveEvent
+    #Triggered by Chess Engine MoveEvent
     def MovePiece(self,*args,**kwargs):
         tag=int(kwargs['Tag'])
         Row=kwargs['ToRow']
         Column=kwargs['ToCol']
-        #self.canvas.moveto(tag,ChessBoardOffset+ChessBoardSquareSize*Column,ChessBoardOffset+ChessBoardSquareSize*Row)
-        #return
-        xx=ChessBoardOffset+ChessBoardSquareSize*Column
-        yy=ChessBoardOffset+ChessBoardSquareSize*Row
-        Thread=threading.Thread(target=self.AnimateMove,kwargs={'tag':tag,'destX':xx,'destY':yy})
-        Thread.daemon=True
-        Thread.start()
+        if self.Animation:
+            xx=ChessBoardOffset+ChessBoardSquareSize*Column
+            yy=ChessBoardOffset+ChessBoardSquareSize*Row
+            Thread=threading.Thread(target=self.AnimateMove,kwargs={'tag':tag,'destX':xx,'destY':yy})
+            Thread.daemon=True
+            Thread.start()
+        else:
+            self.canvas.moveto(tag,ChessBoardOffset+ChessBoardSquareSize*Column,ChessBoardOffset+ChessBoardSquareSize*Row)
+            Sound.PlayWAV(MoveWAV)
+
+
 
     #Triggered by onResponse.GetGetNextMoveResponseHandler
     def onReadyToMove(self,event):
         if self.moveId:
             self.GameActive=True
             for item in self.currentMove:
-                self.MakeMove(item)
+                self.ParseMove(item)
         else:
             self.GameActive=False
             if self.AnimateTimerThread:
@@ -272,8 +308,7 @@ class ChessMainForm(ResponseListener):
         
 
         self.PopulateBoardIMG()
-
-                
+               
         self.canvas.pack(side="left")
         self.CreateMenuBar()
         self.CreateTree()
@@ -302,10 +337,11 @@ class ChessMainForm(ResponseListener):
                 obj.Tag=self.canvas.create_image(ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Col)),
                                         ChessBoardOffset+(ChessBoardSquareSize*(obj.Position.Row)), 
                                         anchor=NW, image=self.ImageContainer[-1]) 
-                print (obj.Tag,self.canvas.coords(obj.Tag))
+                #print (obj.Tag,self.canvas.coords(obj.Tag))
         self.canvas.update()
 
-    def MakeMove(self,data):
+    def ParseMove(self,data):
+        print (data)
         argNode={}
         color=self.player.upper()
 
@@ -327,6 +363,8 @@ class ChessMainForm(ResponseListener):
                 self.ChessBoard.MovePiece(piece,Color=color,ToRow=toRow,ToCol=toCol,FromRow=fromRow,FromCol=fromColumn,Capture=True)
             else:
                 self.ChessBoard.MovePiece(piece,Color=color,ToRow=toRow,ToCol=toCol,FromRow=fromRow,FromCol=fromColumn,Capture=False)
+            self.Counter+=1
+            self.Log[self.Counter]=(piece,color,toRow,toCol,fromRow,fromColumn,capture)
                     
         #if it is a Castle move then check its type
         elif data['actionName']=='Castle':
@@ -349,6 +387,7 @@ class ChessMainForm(ResponseListener):
         
     def GetParserNextMove(self,event):
         GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
+        
 
     def GetParserFirstMove(self,event):
         GUIRequest().getNextMove(self.gameUUID)
@@ -426,13 +465,14 @@ class ChessMainForm(ResponseListener):
         print('currentMove:', self.currentMove)
         print('moveId: ', self.moveId)
         print('player: ', self.player)
+        print("ChessEngine MoveId:",self.ChessBoard.MoveId)
         Event('ReadyToMove').invoke()  
         
 
     def interpreterErrorResponseHandler(self, response):
         # Αν ο interpreter πετάξει error το παρουσιάζουμε στην οθόνη.
         
-        print(response)
+        print("Error: ",response)
         
 
 if __name__ == '__main__':
