@@ -55,8 +55,10 @@ class Loading:
         self.window.quit()
 
     def onLoadingMessage(self, event) -> None:
-        print(event.message) #Loading message: Giwrgo gamhse tous
+        print(f'LoadingMessage: {event.message}') #Loading message: Giwrgo gamhse tous
 
 if __name__ == '__main__':
     x=Loading()
+    Event('LoadingMessage', message='hi :)').invoke()
     x.start()
+    
