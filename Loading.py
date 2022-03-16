@@ -41,7 +41,7 @@ class ImageLabel(tk.Label):
 class Loading:
     def __init__(self):
         self.window = tk.Tk()
-        self.gifPath = f'{os.getcwd()}\loading.gif'
+        self.gifPath = f'{os.getcwd()}/loading.gif'
         self.gif = None
         Event('LoadingMessage', message="").subscribe(self)
 
