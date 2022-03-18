@@ -1,3 +1,4 @@
+from cProfile import label
 import tkinter as tk
 import os
 from itertools import count, cycle
@@ -44,6 +45,8 @@ class Loading:
         self.gifPath = f'{os.getcwd()}/loading.gif'
         self.gif = None
         Event('LoadingMessage', message="").subscribe(self)
+        self.loadingMessage = tk.Label(self.window, text="",  font='Helvetica 10 bold')
+        self.loadingMessage.pack(side=tk.BOTTOM)
 
     def start(self) -> None:
         self.gif = ImageLabel(self.window)
@@ -55,7 +58,7 @@ class Loading:
         self.window.quit()
 
     def onLoadingMessage(self, event) -> None:
-        print(f'LoadingMessage: {event.message}') #Loading message: Giwrgo gamhse tous
+        self.loadingMessage.config(text=event.message)
 
 if __name__ == '__main__':
     x=Loading()
