@@ -4,7 +4,7 @@ from ChessFormConstants import *
 from PIL import ImageTk,Image
 from FormView import View
         
-class ChessView(View):
+class ChessView:
     def __init__(self) -> None:
         self.root=Tk()
         self.root.withdraw()
