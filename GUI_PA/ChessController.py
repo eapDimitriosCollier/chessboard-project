@@ -19,7 +19,7 @@ class ChessController:
         self.model=model
         self.ChessBoard=Board()
         self.Animation=True
-        self.AnimationSpeed=.5
+        self.AnimationSpeed=1
         self.AnimateTimerThread=None
         Sound.SoundON=True
         self.ChessBoard.MovingEvent+= self.MovePiece
