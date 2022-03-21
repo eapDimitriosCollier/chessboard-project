@@ -116,12 +116,7 @@ class ChessView:
         self.root.mainloop()
         
 
-
-def test():
-    print ("test")
-
 if __name__ == '__main__':
-    #ChessCtrl=ChessController()
     ChessForm=ChessView()
     ChessForm.Show()
     

@@ -26,11 +26,7 @@ class ChessController:
         self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
         self.ChessBoard.HideEvent+= self.HidePiece
-        # self.Thread=None
         self.Lock=threading.Lock()
-        # self.ThreadCondition=threading.Condition(self.Lock)
-        # self.ThreadEvent= threading.Event()
-        # self.Pause=False
         Event('ReadyToMove').subscribe(self)
         
    
