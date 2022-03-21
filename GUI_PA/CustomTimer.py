@@ -27,7 +27,7 @@ if __name__ == '__main__':
     RT.start()
     
     for _ in range(10):
-        print (RT.IsActive)
+        print (RT.isActive)
     
     RT.stop()
-    print (RT.IsActive)
+    print (RT.isActive)

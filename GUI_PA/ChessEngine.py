@@ -33,6 +33,7 @@ class Board:
 
     def PopulateBoard(self)->None:
         self.Container.clear()
+        self.Log.clear()
         self.Container.append(Rook(Color=COLOR.BLACK,Row=0,Column=0))
         self.Container.append(Knight(Color=COLOR.BLACK,Row=0,Column=1))
         self.Container.append(Bishop(Color=COLOR.BLACK,Row=0,Column=2))
@@ -248,7 +249,6 @@ class ChessEvent:
         return self
  
     def __call__(self, *args, **keywargs):
-        #This is the OnEvent method
         for eventhandler in self.__eventhandlers:
             eventhandler(*args, **keywargs)
 
