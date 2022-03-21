@@ -14,7 +14,7 @@ from CustomTimer import RepeativeTimer,threading
 
 class ChessController:
 
-    def __init__(self,view:ChessView,model=ChessModel) -> None:
+    def __init__(self,view:ChessView,model:ChessModel) -> None:
         self.view=view
         self.model=model
         self.ChessBoard=Board()
