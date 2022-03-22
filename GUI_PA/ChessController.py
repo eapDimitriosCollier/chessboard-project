@@ -177,7 +177,7 @@ class ChessController:
             
         toggle=True
         while not (isReachedOrExceeded(destX,x,stepX) or isReachedOrExceeded(destY,y,stepY) or self.AnimationStatus=='HURRY'):
-            if int(slope)!=slope:    
+            if int(slope*step)!=slope*step:    
                 #toggle to compensate for floating point
                 if toggle:
                     stepY=slope*step if dy>0 else -slope*step
