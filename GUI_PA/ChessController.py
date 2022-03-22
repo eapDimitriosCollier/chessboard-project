@@ -1,7 +1,7 @@
 import sys
+from time import sleep
 sys.path.append('../CHESSBOARD-PROJECT')
 from FileExplorer.FileExplorer import FileExplorer
-from FormView import View
 from ChessView import ChessView
 from ChessEngine import Board
 from ChessPiece import Piece
@@ -19,7 +19,9 @@ class ChessController:
         self.model=model
         self.ChessBoard=Board()
         self.Animation=True
-        self.AnimationSpeed=1
+        self.AnimationTaktTime=1 # in seconds
+        self.AnimationPixelStep=1 # in mixels
+        self.AnimationStepDelay=0 # in milliseconds
         self.AnimateTimerThread=None
         Sound.SoundON=True
         self.ChessBoard.MovingEvent+= self.MovePiece
@@ -105,6 +107,7 @@ class ChessController:
         if self.Animation:
             xx=ChessBoardOffset+ChessBoardSquareSize*Column
             yy=ChessBoardOffset+ChessBoardSquareSize*Row
+            #self.AnimateMove(tag=tag, destX=xx,destY=yy)
             Thread=threading.Thread(target=self.AnimateMove,kwargs={'tag':tag,'destX':xx,'destY':yy})
             Thread.daemon=True
             Thread.start()
@@ -133,48 +136,56 @@ class ChessController:
         dx=destX-x
         dy=destY-y
         slope=0
-        toggle=False
-
+        delay=self.AnimationStepDelay/1000
+        step=self.AnimationPixelStep
         #Calculate slope to find the proper stepX and StepY 
         if dx and dy:
             slope=abs(dy/dx)
-            stepX=1 if dx>0 else -1
-            stepY=slope if dy>0 else -slope
+            stepX=step if dx>0 else -step
+            stepY=slope*step if dy>0 else -slope*step
         
         #if there is no slope just make a single step on proper axis
         else:
             if dy!=0:
-                stepY=1 if dy>0 else -1
+                stepY=step if dy>0 else -step
             else:
                 stepY=0
 
             if dx!=0:
-                stepX=1 if dx>0 else -1
+                stepX=step if dx>0 else -step
             else:
                 stepX=0
 
-        while x!=destX or y!=destY:
-            #make sure to exit the loop if the destinatuon is bypassed when toggling is on
-            if slope!=0:
-                if dy>0:
-                    if y>=destY: break
+        def isReachedOrExceeded(dest,coord,step):
+            if step>0:
+                if coord+step >= dest:
+                    return True
                 else:
-                    if y<=destY: break
+                    return False
+            elif step<0:
+                if coord+step <= dest:
+                    return True
+                else:
+                    return False
+            elif step==0:
+                return False
 
-                if int(slope)!=slope:    
-                    #toggle to compensate for floating point
-                    if not toggle:           
-                        if int(slope)>0:
-                            stepY=-int(slope) if dy>0 else int(slope)
-                            toggle=False
-                        else:
-                            stepY=1 if dy>0 else -1
-                            toggle=True            
-                    else:
-                        stepY=0
-                        toggle=False
             
-            self.view.MoveImage(tag,(x+stepX),int(y+stepY))
+        toggle=True
+        while not (isReachedOrExceeded(destX,x,stepX) or isReachedOrExceeded(destY,y,stepY)):
+            if int(slope)!=slope:    
+                #toggle to compensate for floating point
+                if toggle:
+                    stepY=slope*step if dy>0 else -slope*step
+                    stepY=int(stepY)
+                    toggle=False
+                else:
+                    stepY=slope*step if dy>0 else -slope*step
+                    stepY=int(stepY)+ (1 if stepY>0 else -1)
+                    toggle=True
+            
+            self.view.MoveImage(tag,(x+stepX),(y+stepY))
+            sleep(delay)
             x,y=self.view.GetImageCoords(tag)
         
         self.view.MoveImage(tag,destX,destY)
@@ -212,8 +223,7 @@ class ChessController:
 
     def Play(self)->None:
         self.view.PlayEnabled()
-        self.AnimateTimerThread=RepeativeTimer(self.AnimationSpeed,self.StartGameAnimation)
-        self.GameActive=True
+        self.AnimateTimerThread=RepeativeTimer(self.AnimationTaktTime,self.StartGameAnimation)
         self.AnimateTimerThread.start()
         
 
@@ -223,10 +233,7 @@ class ChessController:
         self.view.PauseEnabled()
 
     def StartGameAnimation(self):
-        #if self.GameActive:
         self.model.GetParserNextMove(None)
-        #else:
-        #self.AnimateTimerThread.stop()
 
     #triggered by pause button
     def PauseGame(self):
