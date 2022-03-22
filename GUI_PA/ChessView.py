@@ -16,16 +16,23 @@ class ChessView:
         self.icon=f"{ImagePath}/ico/chess.ico"
         self.InitializeComponents()
         self.CreateMenuBar()
+        self._isPlayEnabled=False
+
+    @property
+    def isPlayEnabled(self)->bool:
+        return self._isPlayEnabled
 
     def PlayEnabled(self)->None:
         self.MoveNextBtn['state']="disable"
         self.MovePreviousBtn['state']="disable"
         self.PlayBtn['state']="disable"
+        self._isPlayEnabled=True
 
     def PauseEnabled(self)->None:
         self.MoveNextBtn['state']="normal"
         self.MovePreviousBtn['state']="normal"
         self.PlayBtn['state']="normal"
+        self._isPlayEnabled=False
 
     def GetImageCoords(self,tag:int)-> list[int,int]:
         x,y=self.canvas.coords(tag)

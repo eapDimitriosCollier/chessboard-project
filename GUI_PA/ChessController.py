@@ -20,15 +20,17 @@ class ChessController:
         self.ChessBoard=Board()
         self.Animation=True
         self.AnimationTaktTime=1 # in seconds
-        self.AnimationPixelStep=1 # in mixels
+        self.AnimationPixelStep=1 # in pixels
         self.AnimationStepDelay=0 # in milliseconds
         self.AnimateTimerThread=None
+        self.AnimationStatus='OFF'
+        self.Lock=threading.Lock()
         Sound.SoundON=True
         self.ChessBoard.MovingEvent+= self.MovePiece
         self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
         self.ChessBoard.HideEvent+= self.HidePiece
-        self.Lock=threading.Lock()
+        
         Event('ReadyToMove').subscribe(self)
         
    
@@ -130,8 +132,11 @@ class ChessController:
         Sound.PlayWAV(PromoteWAV)
 
     def AnimateMove(self,tag,destX,destY):
+        while self.AnimationStatus=='HURRY':
+            sleep(100/1000)
         self.Lock.acquire()
         x,y=self.view.canvas.coords(tag)
+        self.AnimationStatus='ON'
         self.Lock.release()
         dx=destX-x
         dy=destY-y
@@ -169,10 +174,9 @@ class ChessController:
                     return False
             elif step==0:
                 return False
-
             
         toggle=True
-        while not (isReachedOrExceeded(destX,x,stepX) or isReachedOrExceeded(destY,y,stepY)):
+        while not (isReachedOrExceeded(destX,x,stepX) or isReachedOrExceeded(destY,y,stepY) or self.AnimationStatus=='HURRY'):
             if int(slope)!=slope:    
                 #toggle to compensate for floating point
                 if toggle:
@@ -189,7 +193,13 @@ class ChessController:
             x,y=self.view.GetImageCoords(tag)
         
         self.view.MoveImage(tag,destX,destY)
+        with self.Lock:
+            self.AnimationStatus='OFF'
         Sound.PlayWAV(MoveWAV)
+        
+        # if not self.view.isPlayEnabled:
+        #     self.view.MoveNextBtn['state']="normal"
+
 
     def HidePiece(self,Tag)->None:
         self.view.HideImage(Tag)
@@ -199,6 +209,9 @@ class ChessController:
 
     def MoveNext(self) ->None:
         self.view.MoveNextBtn['state']='disable'
+        if self.AnimationStatus=='ON':
+            with self.Lock:
+                self.AnimationStatus='HURRY'
         self.model.GetParserNextMove(None)
         self.view.MoveNextBtn['state']='normal'
         
@@ -233,6 +246,9 @@ class ChessController:
         self.view.PauseEnabled()
 
     def StartGameAnimation(self):
+        if self.AnimationStatus=='ON':
+            with self.Lock:
+                self.AnimationStatus='HURRY'
         self.model.GetParserNextMove(None)
 
     #triggered by pause button
