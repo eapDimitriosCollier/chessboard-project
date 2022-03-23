@@ -1,8 +1,11 @@
+import sys
+sys.path.append('../CHESSBOARD-PROJECT')
 from tkinter import *
 from tkinter import messagebox
 from ChessFormConstants import *
 from PIL import ImageTk,Image
 from FormView import View
+from GUI_PA.treeGrid import DataGridView
         
 class ChessView:
     def __init__(self) -> None:
@@ -125,6 +128,8 @@ class ChessView:
 
 if __name__ == '__main__':
     ChessForm=ChessView()
+    dgv=DataGridView(ChessForm.root,ChessForm.canvas)
+    dgv.CreateTree()
     ChessForm.Show()
     
 
