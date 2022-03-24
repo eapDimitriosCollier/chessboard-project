@@ -1,5 +1,5 @@
 from Request.Request import Request
-from threading import Lock
+from threading import *
 
 class Response():
     _responseListeners: list = []
@@ -22,13 +22,13 @@ class Response():
     def dispatch(self) -> None:
         Response._lock.acquire()
         for responseListener in self._responseListeners:
-            responseListener.onResponse(self)
+            Thread(target=responseListener.onResponse, args=(self,)).start()
         Response._lock.release()
     
     def dispatchError(self) -> None:
         Response._lock.acquire()
         for responseListener in self._responseListeners:
-            responseListener.onErrorResponse(self)
+            Thread(target=responseListener.onErrorResponse, args=(self,)).start()
         Response._lock.release()
     
     def sendResponse(self, request: Request, response):

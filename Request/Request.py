@@ -1,4 +1,4 @@
-from threading import Lock
+from threading import *
 
 class Request():
     _requestListeners: list = []
@@ -21,5 +21,5 @@ class Request():
     def dispatch(self) -> None:
         Request._lock.acquire()
         for requestListener in Request._requestListeners:
-            requestListener.onRequest(self)
+            Thread(target=requestListener.onRequest, args=(self,)).start()
         Request._lock.release()   

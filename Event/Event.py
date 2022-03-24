@@ -1,6 +1,4 @@
-from threading import Lock
-
-
+from threading import *
 
 class Event():
     """Thread safe Event"""
@@ -55,5 +53,5 @@ def invoke(event):
     
     event.__lock.acquire()
     for eventListener in event.__eventListeners:
-        getattr(eventListener, f'on{eventName}')(event)
+        Thread(target=getattr(eventListener, f'on{eventName}'), args=(event,)).start()
     event.__lock.release()       
