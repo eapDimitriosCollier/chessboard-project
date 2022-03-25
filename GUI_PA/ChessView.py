@@ -4,7 +4,6 @@ from tkinter import *
 from tkinter import messagebox
 from ChessFormConstants import *
 from PIL import ImageTk,Image
-from FormView import View
 from GUI_PA.treeGrid import DataGridView
         
 class ChessView:
@@ -112,10 +111,10 @@ class ChessView:
         
 
     def Couple(self,controller) -> None:
-        self.MovePreviousBtn.config(command=controller.MovePrevious)
-        self.MoveNextBtn.config(command=controller.MoveNext)
-        self.PlayBtn.config(command=controller.Play)
-        self.PauseBtn.config(command=controller.Pause)
+        self.MovePreviousBtn.config(command=controller.MovePrevious_btn)
+        self.MoveNextBtn.config(command=controller.MoveNext_btn)
+        self.PlayBtn.config(command=controller.Play_btn)
+        self.PauseBtn.config(command=controller.Pause_btn)
         
         self.filemenu.entryconfig(index=self.filemenu.index("Open"),command=controller.FileDialog)
         self.filemenu.entryconfig(index=self.filemenu.index("Exit"),command=quit)

@@ -19,7 +19,7 @@ class ChessController:
         self.model=model
         self.ChessBoard=Board()
         self.Animation=True
-        self.AnimationTaktTime=.5 # in seconds
+        self.AnimationTaktTime=.1 # in seconds
         self.AnimationPixelStep=1 # in pixels
         self.AnimationStepDelay=0 # in milliseconds
         self.AnimateTimerThread=None
@@ -93,7 +93,7 @@ class ChessController:
             for item in self.model.currentMove:
                 self.ParseMove(item)
         else:
-            self.Pause()
+            self.Pause_btn()
             self.view.msgBox("Game End",f"Result:{self.model.currentMove}")
             self.model.GameActive=False
             self.ClearBoardIMG()
