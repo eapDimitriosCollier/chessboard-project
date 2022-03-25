@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../chessboard-project')
+from Event.Event import Event
 from enum import Enum,unique
 import re
 # Lexer breaks the PGN file in tokens.
@@ -72,6 +75,7 @@ class TokenIndexError(ErrorHandling):
 class Lexer:
 
     def __init__(self,text=None) -> None:
+        Event('LoadingMessage', message='Lexing...').invoke()
         self.tokens=[]
         self._index=0
         self._EOF=False

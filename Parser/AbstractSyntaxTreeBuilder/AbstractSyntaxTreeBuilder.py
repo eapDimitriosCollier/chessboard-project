@@ -1,8 +1,12 @@
+import sys
+sys.path.append('../chessboard-project')
 from Parser.ParseTree.ParseNode import ParseNode
 from Parser.ParseTree.ParseTree import ParseTree
+from Event.Event import Event
 
 class AbstractSyntaxTreeBuilder:
     def __init__(self, parseTree: ParseTree) -> None:
+        Event('LoadingMessage', message='Building Abstract Syntax Tree...').invoke()
         self.parseTree = parseTree
         self.AST = None
         self.astNodeFunctionMap = {

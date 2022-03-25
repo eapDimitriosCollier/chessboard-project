@@ -1,12 +1,11 @@
 import sys
-sys.path.append('../CHESSBOARD-PROJECT')
+sys.path.append('../chessboard-project')
 from Event.Event import Event
 from Response.Response import Response
 from ResponseListener.ResponseListener import ResponseListener
 from Interpreter import Interpreter
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
-from Lexer.sample_game import txt
 
 class ChessModel():
     def __init__(self) -> None:
@@ -18,14 +17,14 @@ class ChessModel():
         self.player = None
         self.currentMove = []
         self.GameActive=False
-        self._txt=txt
+        self._txt=None
+        self.interpreter = Interpreter()
         
         # Initialize events
         Event('InterpretationStarted').subscribe(self)
         Event('InterpretationEnded').subscribe(self)
         Event('InterpretationFailed').subscribe(self)  
         InterpreterResponse().subscribe(self)
-        self.interpreterInit()
 
     @property
     def Txt(self):
@@ -33,28 +32,35 @@ class ChessModel():
     
     @Txt.setter
     def Txt(self,data:str):
-        self._txt=data
-
-    def GetParserNextMove(self,event):
-        if not self.gameUUID:
-            GUIRequest().getGames()
-        GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
+        self.resetModel()
+        self._txt = data
         
-    def GetParserFirstMove(self,event):
-        if not self.gameUUID:
-            GUIRequest().getGames()        
-        GUIRequest().getNextMove(self.gameUUID)
+    def resetModel(self):
+        self.games = []
+        self.gameUUID = ''
+        self.tags = []
+        self.rawMoves = []
+        self.moveId = None
+        self.player = None
+        self.currentMove = []
+        self.GameActive=False
+        self._txt=None
+    
+    def GetParserNextMove(self):
+        if self.gameUUID:
+            GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
 
-    def interpreterInit(self) -> None:
-        self.interpreter = Interpreter(self._txt)
+    def interpret(self) -> None:
+        self.interpreter.readFile(self._txt)
 
     def onInterpretationStarted(self, event):
-        print('Interpretation Started')
+        print('Interpreter Start')
+        Event('LoadingStart').invoke()
         
     def onInterpretationEnded(self, event):
-        print('Interpretation Ended')
+        print('Interpreter Stop')
+        Event('LoadingStop').invoke()
         GUIRequest().getGames()
-        self.GetParserFirstMove(event)
         
     def onInterpretationFailed(self, event):
         print('Interpretation Failed')
@@ -63,8 +69,7 @@ class ChessModel():
         if (isinstance(response, InterpreterResponse)):
             # Θα ήταν ωραίο να παίζαμε με match-case αντί για if, αλλά για backwards compatibility
             # ας το αφήσουμε καλύτερα...
-            print (Response)
-            
+        
             if (response._request._type == "GET_GAMES"):
                 self.GetGamesResponseHandler(response._response)
             elif (response._request._type == "GET_TAGS"):
@@ -72,6 +77,7 @@ class ChessModel():
             elif (response._request._type == "GET_RAW_MOVES"):
                 self.GetRawMovesResponseHandler(response._response)
             elif (response._request._type == "GET_NEXT_MOVE"):
+                print(response._request._args)
                 self.GetGetNextMoveResponseHandler(response._response)
                             
     def onErrorResponse(self, response: Response):
@@ -80,9 +86,7 @@ class ChessModel():
            
     def GetGamesResponseHandler(self, response):
         self.games = response
-        self.gameUUID = self.games[0]
-        #GUIRequest().getNextMove(self.gameUUID)
-        
+        self.gameUUID = self.games[0]      
     
     def GetTagsResponseHandler(self, response):
         self.tags = response
@@ -93,6 +97,7 @@ class ChessModel():
         print(self.rawMoves)
     
     def GetGetNextMoveResponseHandler(self, response):
+        
         self.currentMove = response['nextMove']
         self.moveId = response['nextMoveId']
         self.player = response['nextPlayer']
@@ -104,4 +109,4 @@ class ChessModel():
 
     def interpreterErrorResponseHandler(self, response):
         # Αν ο interpreter πετάξει error το παρουσιάζουμε στην οθόνη.
-        print("Error: ",response)
+        print("Error: ",response._response, "Request:", response._request._type, "Params:", response._request._args)

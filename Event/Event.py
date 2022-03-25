@@ -1,9 +1,9 @@
-from threading import *
+from threading import Lock, Thread
 
 class Event():
     """Thread safe Event"""
     __eventList = {}
-    
+        
     def __init__(self, eventName, **eventKwargs):
         self.__currEvent = None
         
@@ -12,12 +12,15 @@ class Event():
         else:
             self.__currEvent = Event.__eventList[eventName]
         
-        for variableName, variableContents in eventKwargs.items():
-            setattr(self.__currEvent, variableName, variableContents)    
-    
+            for variableName, variableContents in eventKwargs.items():
+                getattr(self.__currEvent, '__lock').acquire()
+                setattr(self.__currEvent, variableName, variableContents)  
+                getattr(self.__currEvent, '__lock').release()
+            
+        
     def __getattr__(self, eventFuncName):
         return getattr(self.__currEvent, eventFuncName)
-       
+             
     def createNewEvent(self, EventName, **eventKwargs):
         eventCls = type(EventName, (), {
             'subscribe' : subscribe,
@@ -50,8 +53,7 @@ def unsubscribe(event, eventListener):
 @classmethod
 def invoke(event):
     eventName =  event.__eventName
-    
     event.__lock.acquire()
     for eventListener in event.__eventListeners:
-        Thread(target=getattr(eventListener, f'on{eventName}'), args=(event,)).start()
+        Thread(target=getattr(eventListener, f'on{eventName}'), args=(event,), daemon=True).start()
     event.__lock.release()       

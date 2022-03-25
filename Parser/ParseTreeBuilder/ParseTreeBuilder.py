@@ -1,7 +1,10 @@
+import sys
+sys.path.append('../chessboard-project')
 from Parser.ParseTree.ParseNode import ParseNode
 from Parser.ParseTree.ParseTree import ParseTree
 from Parser import ParserConstants
 from Lexer.Lexer import Lexer
+from Event.Event import Event
 import re
 
 ## Η γραμματική του PGN εκφρασμένη σε BNF. 
@@ -55,6 +58,7 @@ class ParseTreeBuilder:
     """Απλή υλοποίηση ενός Recursive Descent Parser"""
     def __init__(self, Lexer: Lexer) -> None:
         self.Lexer = Lexer
+        Event('LoadingMessage', message='Building Parse Tree...').invoke()
         self.usedTagIdentifiers = set()
         self.parseTree = None
 

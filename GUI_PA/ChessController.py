@@ -11,7 +11,6 @@ from Event.Event import Event
 from Sound import *
 from CustomTimer import RepeativeTimer,threading
 
-
 class ChessController:
 
     def __init__(self,view:ChessView,model:ChessModel) -> None:
@@ -30,9 +29,11 @@ class ChessController:
         self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
         self.ChessBoard.HideEvent+= self.HidePiece
-        
+                
         Event('ReadyToMove').subscribe(self)
-        
+        Event('LoadingStart').subscribe(self)
+        Event('LoadingStop').subscribe(self)
+
    
     def Start(self)->None:
         self.view=self.view()
@@ -212,7 +213,7 @@ class ChessController:
         if self.AnimationStatus=='ON':
             with self.Lock:
                 self.AnimationStatus='HURRY'
-        self.model.GetParserNextMove(None)
+        self.model.GetParserNextMove()
         self.view.MoveNextBtn['state']='normal'
         
     def MovePrevious_btn(self) ->None:
@@ -248,7 +249,7 @@ class ChessController:
         if self.AnimationStatus=='ON':
             with self.Lock:
                 self.AnimationStatus='HURRY'
-        self.model.GetParserNextMove(None)
+        self.model.GetParserNextMove()
 
     #triggered by pause button
     def PauseGame(self):
@@ -263,10 +264,11 @@ class ChessController:
         PgnString=FileExplorer().open()
         self.ClearBoardIMG()
         self.ChessBoard.PopulateBoard()
-        self.PopulateBoardIMG() 
+        self.PopulateBoardIMG()
+        
+        self.model.resetModel()
         self.model.Txt=PgnString
-        self.model.GameActive=False
-        self.model.interpreterInit()     
+        self.model.interpret()    
               
 
     def PopulateBoardIMG(self)->None:
@@ -280,6 +282,12 @@ class ChessController:
     def DoNothing(self):
         pass
 
+    def onLoadingStart(self, event):
+        self.view.loadingStart()
+    
+    def onLoadingStop(self, event):
+        self.view.loadingStop()
+    
 if __name__ == '__main__':
     ChessCtrl=ChessController(ChessView,ChessModel)
     ChessCtrl.Start()

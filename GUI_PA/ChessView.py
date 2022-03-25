@@ -1,3 +1,4 @@
+from collections import deque
 import sys
 sys.path.append('../chessboard-project')
 from tkinter import *
@@ -5,7 +6,9 @@ from tkinter import messagebox
 from ChessFormConstants import *
 from PIL import ImageTk,Image
 from GUI_PA.treeGrid import DataGridView
-        
+from Loading import Loading      
+from CustomTimer import RepeativeTimer
+  
 class ChessView:
     def __init__(self) -> None:
         self.root=Tk()
@@ -13,12 +16,16 @@ class ChessView:
         self.canvas = Canvas(self.root, width = 800, height = 600) 
         self.ImageContainer=[]
         self.controller=None
+        self.loadingScreen = None
 
         self.title="Chess PGN Viewer"
         self.icon=f"{ImagePath}/ico/chess.ico"
         self.InitializeComponents()
         self.CreateMenuBar()
         self._isPlayEnabled=False
+
+        self.loadingEventQueue = []
+        self.RTLoadingWorker = None
 
     @property
     def isPlayEnabled(self)->bool:
@@ -86,9 +93,8 @@ class ChessView:
         self.canvas.create_window(700, 550, anchor='nw', window=self.MoveNextBtn)
         self.canvas.create_window(750, 550, anchor='nw', window=self.PlayBtn)
         self.canvas.create_window(800, 550, anchor='nw', window=self.PauseBtn)
-    
         self.canvas.pack()
-
+        self.loadingScreen = Loading(self.root)
 
     def CreateMenuBar(self)->None:
         menubar = Menu(self.root)
@@ -123,8 +129,26 @@ class ChessView:
         #self.PauseBtn.config(command=lambda: self.msgBox("aaa","bbb"))
         self.root.deiconify()
         self.root.mainloop()
+    
+    def loadingStart(self):
+        self.loadingEventQueue.append('start')
+        self.RTLoadingWorker = RepeativeTimer(1, self.loadingWorker)
+        self.RTLoadingWorker.start()
+        self.RTLoadingWorker.run()
+                
+    def loadingStop(self):
+        self.loadingEventQueue.append('stop')
         
-
+    def loadingWorker(self):
+        currentEvnt = self.loadingEventQueue[-1]
+        
+        if currentEvnt == "start":
+            self.loadingScreen.start()
+        elif currentEvnt == "stop":
+            self.loadingScreen.stop()
+            self.RTLoadingWorker.stop()
+            self.loadingEventQueue = []
+                
 if __name__ == '__main__':
     ChessForm=ChessView()
     dgv=DataGridView(ChessForm.root,ChessForm.canvas)

@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../CHESSBOARD-PROJECT')
+sys.path.append('../chessboard-project')
 from tkinter import *
 from tkinter import ttk
 from ChessFormConstants import *

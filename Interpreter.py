@@ -1,28 +1,41 @@
-from urllib import response
+from threading import Thread
 from Lexer.Lexer import Lexer
 from Parser.Parser import Parser
 from Event.Event import Event
 from InterpreterResponse import InterpreterResponse
 from GUIRequest import GUIRequest
 from RequestListener.RequestListener import RequestListener
-from threading import Thread
 import uuid
 
 class Interpreter(RequestListener):
-    def __init__(self, rawPGN):
+    def __init__(self):
         self.parsingResult = None 
         self.games = []
         self.tags = {}
         self.moves = {}
         self.rawMoves = {}
         self.gameTerminations = {}
+        self.interpreterProcess = None
+    
+    def resetInterpreter(self):
+        self.parsingResult = None 
+        self.games = []
+        self.tags = {}
+        self.moves = {}
+        self.rawMoves = {}
+        self.gameTerminations = {}
+        if (self.interpreterProcess):
+            GUIRequest().unsubscribe(self)
+            self.interpreterProcess._stop()
+            self.interpreterProcess = None
+    
+    def readFile(self, rawPGN):   
+        self.resetInterpreter()
         
-        
-        interpreterThread = Thread(target=self.start, args=(rawPGN,))
-        interpreterThread.start()
+        self.interpreterProcess = Thread(target=self.start, args=(rawPGN,))
+        self.interpreterProcess.start()
 
     def start(self, rawPGN):
-        
         Event('InterpretationStarted').invoke()
         try:
             parser = Parser(Lexer(rawPGN))
@@ -47,8 +60,7 @@ class Interpreter(RequestListener):
             elif (request._type == "GET_RAW_MOVES"):
                 self.GetRawMovesRequestHandler(request)
             elif (request._type == "GET_NEXT_MOVE"):
-                self.GetNextMoveRequestHandler(request)
-                
+                self.GetNextMoveRequestHandler(request)          
 
     def GetGamesRequestHandler(self, request: GUIRequest) -> None:
         InterpreterResponse().sendResponse(request, self.games)

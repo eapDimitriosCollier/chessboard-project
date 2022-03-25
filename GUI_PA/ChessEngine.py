@@ -52,7 +52,8 @@ class Board:
         self.Container.append(King(Color=COLOR.WHITE,Row=7,Column=4))
         self.Container.append(Bishop(Color=COLOR.WHITE,Row=7,Column=5))
         self.Container.append(Knight(Color=COLOR.WHITE,Row=7,Column=6))
-        self.Container.append(Rook(Color=COLOR.WHITE,Row=7,Column=7))    
+        self.Container.append(Rook(Color=COLOR.WHITE,Row=7,Column=7))
+        self._MoveId = 0  
         print(len(self.Container))
 
     def UpDateLog(self)->None:
