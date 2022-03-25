@@ -19,7 +19,7 @@ class ChessController:
         self.model=model
         self.ChessBoard=Board()
         self.Animation=True
-        self.AnimationTaktTime=1 # in seconds
+        self.AnimationTaktTime=.5 # in seconds
         self.AnimationPixelStep=1 # in pixels
         self.AnimationStepDelay=0 # in milliseconds
         self.AnimateTimerThread=None
@@ -207,7 +207,7 @@ class ChessController:
     def InsertPiece(self,x:int,y:int,img:str)->int:
         return self.view.InsertImage(x,y,img)
 
-    def MoveNext(self) ->None:
+    def MoveNext_btn(self) ->None:
         self.view.MoveNextBtn['state']='disable'
         if self.AnimationStatus=='ON':
             with self.Lock:
@@ -215,7 +215,7 @@ class ChessController:
         self.model.GetParserNextMove(None)
         self.view.MoveNextBtn['state']='normal'
         
-    def MovePrevious(self) ->None:
+    def MovePrevious_btn(self) ->None:
         self.ClearBoardIMG()
         if self.model.moveId:
             if self.model.player=="white":
@@ -230,20 +230,19 @@ class ChessController:
         self.PopulateBoardIMG()
         Sound.PlayWAV(MoveWAV)
 
-    def ClearBoardIMG(self)->None:
-        for obj in self.ChessBoard.Container:
-            self.view.DeleteImage(obj.Tag)
-
-    def Play(self)->None:
+    def Play_btn(self)->None:
         self.view.PlayEnabled()
         self.AnimateTimerThread=RepeativeTimer(self.AnimationTaktTime,self.StartGameAnimation)
         self.AnimateTimerThread.start()
         
-
-    def Pause(self)->None:
+    def Pause_btn(self)->None:
         if self.AnimateTimerThread:
             self.AnimateTimerThread.stop()        
         self.view.PauseEnabled()
+
+    def ClearBoardIMG(self)->None:
+        for obj in self.ChessBoard.Container:
+            self.view.DeleteImage(obj.Tag)
 
     def StartGameAnimation(self):
         if self.AnimationStatus=='ON':
