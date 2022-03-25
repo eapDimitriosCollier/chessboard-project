@@ -37,7 +37,8 @@ class Sound:
     def PlayWAV(cls,wav_file:str)->None:
         if cls.SoundON:
             cls.ThreadLock.acquire()
-            if not getattr(cls,"isInit"):
+            #if not getattr(cls,"isInit"):
+            if not cls.isInit:
                 Event('WavInQueue').subscribe(cls)
                 setattr(cls,"isInit",True)
             cls.PlayQueue.append(wav_file)

@@ -25,7 +25,7 @@ class ChessController:
         self.AnimateTimerThread=None
         self.AnimationStatus='OFF'
         self.Lock=threading.Lock()
-        Sound.SoundON=True
+        Sound.SoundON=False
         self.ChessBoard.MovingEvent+= self.MovePiece
         self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
