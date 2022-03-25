@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../CHESSBOARD-PROJECT')
+sys.path.append('../chessboard-project')
 from tkinter import *
 from tkinter import messagebox
 from ChessFormConstants import *
@@ -36,7 +36,7 @@ class ChessView:
         self.PlayBtn['state']="normal"
         self._isPlayEnabled=False
 
-    def GetImageCoords(self,tag:int)-> list[int,int]:
+    def GetImageCoords(self,tag:int)-> 'list[int,int]':
         x,y=self.canvas.coords(tag)
         return (x,y)
 

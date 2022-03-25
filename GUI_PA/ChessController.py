@@ -1,6 +1,6 @@
 import sys
 from time import sleep
-sys.path.append('../CHESSBOARD-PROJECT')
+sys.path.append('../chessboard-project')
 from FileExplorer.FileExplorer import FileExplorer
 from ChessView import ChessView
 from ChessEngine import Board
