@@ -63,7 +63,7 @@ class ChessView:
         
         self.root['background']=BackGroundColor    
         self.root.title(self.title)
-        self.root.iconbitmap(self.icon)
+        #self.root.iconbitmap(self.icon)
 
         self.canvas = Canvas(self.root, width = MainWindowGeometryX, height = ChessBoardY, bd=0, highlightthickness=0)   
         self.chessBoard_img=ImageTk.PhotoImage(Image.open(f"{ImagePath}/chessboard.png"))

@@ -259,7 +259,7 @@ class ChessController:
         self.PlayBtn['state']="normal"
 
     def FileDialog(self):
-        self.Pause()
+        self.Pause_btn()
         PgnString=FileExplorer().open()
         self.ClearBoardIMG()
         self.ChessBoard.PopulateBoard()
