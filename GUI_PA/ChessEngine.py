@@ -7,7 +7,7 @@ class Board:
         self.Log=[]
         self._MoveId=0
         self.PopulateBoard()
-        self.UpDateLog()
+        self.InsertLog()
         self.MovingEvent=ChessEvent()
         self.CaptureEvent=ChessEvent()
         self.PromoteEvent=ChessEvent()
@@ -56,8 +56,11 @@ class Board:
         self._MoveId = 0  
         print(len(self.Container))
 
-    def UpDateLog(self)->None:
+    def InsertLog(self)->None:
         self.Log.append(self.UnicodeBoard)
+
+    def UpDateLog(self)->None:
+        self.Log[-1]=(self.UnicodeBoard)
         
     def PopState(self)->None:
         if len(self.Log)>1:
@@ -132,7 +135,7 @@ class Board:
         if Capture:
             self.Container.pop(self.Container.index(tmpItem))
             self.CaptureEvent(Tag=tmpItem.Tag)
-        self.UpDateLog()
+        self.InsertLog()
  
     def CapturePiece(self, Row:int,Col:int)-> None:
         for item in [piece for piece in self.Container if (piece.Position.Row==Row and piece.Position.Col==Col )]:
@@ -179,6 +182,9 @@ class Board:
             
             self.HidePiece(Row=Row,Col=Col)
             self.PromoteEvent()
+            #update log, don't insert!
+            #self.Log[-1]=(self.UnicodeBoard)
+            self.UpDateLog()
             
             break
         else:
