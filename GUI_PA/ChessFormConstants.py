@@ -1,4 +1,5 @@
 import os
+import sys
 ImagePath = os.getcwd()+"/GUI_PA/IMG"
 MainWindowGeometryX=900
 if sys.platform=='win32':
