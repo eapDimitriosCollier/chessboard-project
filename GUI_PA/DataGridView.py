@@ -13,6 +13,8 @@ class DataGridView:
         
     def connectModel(self, model):
         Event('GamesUpdated').subscribe(self)
+        Event('TagsUpdated').subscribe(self)
+        Event('RawMovesUpdated').subscribe(self)
         self.model = model
     
     def CreateTree(self):
