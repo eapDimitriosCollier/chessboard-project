@@ -3,12 +3,18 @@ sys.path.append('../chessboard-project')
 from tkinter import *
 from tkinter import ttk
 from ChessFormConstants import *
+from Event.Event import Event
 
 class DataGridView:
     def __init__(self,tkRoot,tkCanvas) -> None:
         self.root=tkRoot
         self.canvas=tkCanvas
-
+        self.model = None
+        
+    def connectModel(self, model):
+        Event('GamesUpdated').subscribe(self)
+        self.model = model
+    
     def CreateTree(self):
         # define columns
         columns = ('Chess Game', 'Opponents')
@@ -45,4 +51,12 @@ class DataGridView:
             self.tree.insert('', 'end', values=record)     
         for record in tmpList2:       
             self.tree_moves.insert('', 'end', values=record)   
-        
+    
+    def onGamesUpdated(self, event):
+        pass
+    
+    def onTagsUpdated(self, event):
+        pass
+    
+    def onRawMovesUpdated(self, event):
+        pass

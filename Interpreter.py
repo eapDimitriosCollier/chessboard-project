@@ -152,16 +152,11 @@ class Interpreter(RequestListener):
             'nextPlayer' : nextPlayer
         })
     
-    def countGames(self, rawPGN):
-        splitGames = rawPGN.split("]\n\n")
-        return len(splitGames) - 1
-    
     def populateInterpreter(self):
         # Λίγο πρίν τελειώσει το Interpretation, θα βάλουμε σε κάθε παιχνίδι ένα UUID
         # το οποίο θα ξεχωρίζει κάθε παιχνίδι.
         # Ο λόγος χρήσης UUID είναι επειδή στο μέλλον θέλουμε να χρησιμοποιήσουμε μια βάση δεδομένων
-        # για την αποθήκευση των παιχνιδιών (θα περνιούνται τα παιχνίδια στην βάση μαζί με κάποιο hash
-        # ώστε παιχνίδια που έχουν parsαριστεί ήδη, να μην ξαναparsάρονται.)
+        # για την αποθήκευση των παιχνιδιών. (caching με SQLite δηλαδή).
         
         for game in self.parsingResult:
             # Παράγουμε UUID και γεμίζουμε τα games

@@ -5,7 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 from ChessFormConstants import *
 from PIL import ImageTk,Image
-from GUI_PA.treeGrid import DataGridView
+from GUI_PA.DataGridView import DataGridView
 from Loading import Loading      
 from CustomTimer import RepeativeTimer
   
@@ -93,6 +93,8 @@ class ChessView:
         self.canvas.create_window(700, 550, anchor='nw', window=self.MoveNextBtn)
         self.canvas.create_window(750, 550, anchor='nw', window=self.PlayBtn)
         self.canvas.create_window(800, 550, anchor='nw', window=self.PauseBtn)
+        
+        self.dgv = DataGridView(self.root, self.canvas)
         self.canvas.pack()
         self.loadingScreen = Loading(self.root)
 
@@ -121,7 +123,8 @@ class ChessView:
         self.MoveNextBtn.config(command=controller.MoveNext_btn)
         self.PlayBtn.config(command=controller.Play_btn)
         self.PauseBtn.config(command=controller.Pause_btn)
-        
+        self.dgv.connectModel(controller.model)
+        self.dgv.CreateTree()
         self.filemenu.entryconfig(index=self.filemenu.index("Open"),command=controller.FileDialog)
         self.filemenu.entryconfig(index=self.filemenu.index("Exit"),command=quit)
         
@@ -140,6 +143,7 @@ class ChessView:
         self.loadingEventQueue.append('stop')
         
     def loadingWorker(self):
+        if not len(self.loadingEventQueue): return
         currentEvnt = self.loadingEventQueue[-1]
         
         if currentEvnt == "start":
@@ -151,8 +155,8 @@ class ChessView:
                 
 if __name__ == '__main__':
     ChessForm=ChessView()
-    dgv=DataGridView(ChessForm.root,ChessForm.canvas)
-    dgv.CreateTree()
+    # dgv=DataGridView(ChessForm.root,ChessForm.canvas, ChessForm.controller.model)
+    # dgv.CreateTree()
     ChessForm.Show()
     
 
