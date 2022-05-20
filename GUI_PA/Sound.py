@@ -1,7 +1,7 @@
 import os
 import threading
 import sys
-#import winsound
+import winsound
 sys.path.append('../chessboard-project')
 from Event.Event import Event, invoke
 MoveWAV = os.getcwd()+u'/GUI_PA/sound/Move.wav'
