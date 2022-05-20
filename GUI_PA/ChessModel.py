@@ -46,9 +46,17 @@ class ChessModel():
         self.GameActive=False
         self._txt=None
     
+    def setGameUUID(self, gameUUID):
+        self.gameUUID = gameUUID
+        
     def GetParserNextMove(self):
-        if self.gameUUID:
-            GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
+        if self.gameUUID: GUIRequest().getNextMove(self.gameUUID, self.moveId, self.player)
+
+    def GetParserRawMoves(self, gameUUID):
+        GUIRequest().getRawMoves(gameUUID)
+    
+    def GetParserTags(self, gameUUID):
+        GUIRequest().getTags(gameUUID)
 
     def interpret(self) -> None:
         self.interpreter.readFile(self._txt)
@@ -86,18 +94,21 @@ class ChessModel():
            
     def GetGamesResponseHandler(self, response):
         self.games = response
-        self.gameUUID = self.games[0]      
+        self.gameUUID = self.games[0]
+        print(self.games)
+        Event('GamesUpdated').invoke()    
     
     def GetTagsResponseHandler(self, response):
         self.tags = response
         print(self.tags)
+        Event('TagsUpdated').invoke()
     
     def GetRawMovesResponseHandler(self, response):
         self.rawMoves = response
         print(self.rawMoves)
+        Event('RawMovesUpdated').invoke()
     
     def GetGetNextMoveResponseHandler(self, response):
-        
         self.currentMove = response['nextMove']
         self.moveId = response['nextMoveId']
         self.player = response['nextPlayer']
@@ -106,7 +117,6 @@ class ChessModel():
         print('player: ', self.player)
         Event('ReadyToMove').invoke()  
         
-
     def interpreterErrorResponseHandler(self, response):
         # Αν ο interpreter πετάξει error το παρουσιάζουμε στην οθόνη.
         print("Error: ",response._response, "Request:", response._request._type, "Params:", response._request._args)

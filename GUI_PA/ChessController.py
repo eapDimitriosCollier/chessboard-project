@@ -37,9 +37,9 @@ class ChessController:
    
     def Start(self)->None:
         self.view=self.view()
+        self.model=self.model()
         self.view.Couple(self)
         
-        self.model=self.model()
         self.ClearBoardIMG()
         self.PopulateBoardIMG()
         self.view.Show()
