@@ -55,10 +55,13 @@ class DataGridView:
             self.tree_moves.insert('', 'end', values=record)   
     
     def onGamesUpdated(self, event):
-        pass
+        print('From Datagrid view: GamesUpdate Event')
+        print(self.model.games)
+        self.model.GetParserTags(self.model.games[0])
     
     def onTagsUpdated(self, event):
-        pass
+         print('From Datagrid view: TagsUpdate Event')
+         print(self.model.tags)
     
     def onRawMovesUpdated(self, event):
-        pass
+         print('From Datagrid view: RawMovesUptaded Event')
