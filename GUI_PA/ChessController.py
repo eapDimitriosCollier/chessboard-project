@@ -18,13 +18,13 @@ class ChessController:
         self.model=model
         self.ChessBoard=Board()
         self.Animation=True
-        self.AnimationTaktTime=.1 # in seconds
-        self.AnimationPixelStep=1 # in pixels
-        self.AnimationStepDelay=0 # in milliseconds
+        self.AnimationTaktTime=1 # in seconds
+        self.AnimationPixelStep=10 # in pixels
+        self.AnimationStepDelay=1 # in milliseconds
         self.AnimateTimerThread=None
         self.AnimationStatus='OFF'
         self.Lock=threading.Lock()
-        Sound.SoundON=False
+        Sound.SoundON=True
         self.ChessBoard.MovingEvent+= self.MovePiece
         self.ChessBoard.CaptureEvent+= self.CapturePiece
         self.ChessBoard.PromoteEvent+= self.PromotePiece
