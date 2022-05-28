@@ -272,5 +272,3 @@ if __name__ == '__main__':
     ChessBoard.PopState()
     ChessBoard.PrintBoard()
     ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=2,FromRow=None,FromCol=None,Capture=False)
-
-print (BlackUnicodes)
