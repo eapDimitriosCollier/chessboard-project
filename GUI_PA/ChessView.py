@@ -5,8 +5,7 @@ from tkinter import *
 from tkinter import messagebox
 from ChessFormConstants import *
 from PIL import ImageTk,Image
-#from GUI_PA.treeGrid import DataGridView
-from GUI_PA.NewGrid import NewGridView
+from GUI_PA.DataGridView import DataGridView
 from Loading import Loading      
 from CustomTimer import RepeativeTimer
   
@@ -78,7 +77,6 @@ class ChessView:
         self.canvas.create_image(0, 0, anchor=NW, image=self.chessBoard_img) 
         self.canvas['background']=BackGroundColor
         
-
         self.next_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/next.png"))
         self.previous_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/previous.png"))
         self.play_icon = ImageTk.PhotoImage(Image.open(f"{ImagePath}/Buttons/play.png"))
@@ -89,7 +87,9 @@ class ChessView:
         self.PauseBtn = Button(self.root,image=self.pause_icon)
         #self.PauseBtn = self.canvas.create_window(800, 550, anchor='nw',window=Button(self.root,image=self.pause_icon))
         
-
+        self.DGV = DataGridView(self.root, self.canvas)
+        self.DGV.CreateTree()
+        
         self.canvas.create_window(650, 550, anchor='nw', window=self.MovePreviousBtn)        
         self.canvas.create_window(700, 550, anchor='nw', window=self.MoveNextBtn)
         self.canvas.create_window(750, 550, anchor='nw', window=self.PlayBtn)
@@ -102,7 +102,6 @@ class ChessView:
         self.filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=self.filemenu)
         self.filemenu.add_command(label="Open")
-        #filemenu.add_command(label="Close", command=self.DoNothing)
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Exit")#, command=quit)
 
@@ -116,12 +115,12 @@ class ChessView:
     def msgBox(self,title:str,text:str)->None:
         messagebox.showinfo(title=title, message=text)
         
-
     def Couple(self,controller) -> None:
         self.MovePreviousBtn.config(command=controller.MovePrevious_btn)
         self.MoveNextBtn.config(command=controller.MoveNext_btn)
         self.PlayBtn.config(command=controller.Play_btn)
         self.PauseBtn.config(command=controller.Pause_btn)
+        self.DGV.connectModel(controller.model)
         
         self.filemenu.entryconfig(index=self.filemenu.index("Open"),command=controller.FileDialog)
         self.filemenu.entryconfig(index=self.filemenu.index("Exit"),command=quit)
@@ -149,12 +148,5 @@ class ChessView:
             self.loadingScreen.stop()
             self.RTLoadingWorker.stop()
             self.loadingEventQueue = []
-                
-if __name__ == '__main__':
-    ChessForm=ChessView()
-    #dgv=DataGridView(ChessForm.root,ChessForm.canvas)
-    dgv=NewGridView(ChessForm.root,ChessForm.canvas)
-    dgv.CreateTree()
-    ChessForm.Show()
     
 
