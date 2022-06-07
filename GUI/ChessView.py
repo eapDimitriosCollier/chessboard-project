@@ -70,7 +70,7 @@ class ChessView:
         
         self.root['background']=BackGroundColor    
         self.root.title(self.title)
-        #self.root.iconbitmap(self.icon)
+        self.root.iconbitmap(self.icon)
 
         self.canvas = Canvas(self.root, width = MainWindowGeometryX, height = ChessBoardY, bd=0, highlightthickness=0)   
         self.chessBoard_img=ImageTk.PhotoImage(Image.open(f"{ImagePath}/chessboard.png"))
@@ -105,7 +105,7 @@ class ChessView:
         self.filemenu.add_command(label="Open")
         #filemenu.add_command(label="Close", command=self.DoNothing)
         self.filemenu.add_separator()
-        #self.filemenu.add_command(label="Exit")#, command=quit)
+        self.filemenu.add_command(label="Exit")#, command=quit)
 
         self.helpmenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=self.helpmenu)
@@ -126,6 +126,7 @@ class ChessView:
         self.dgv.connectModel(controller.model)
         self.dgv.CreateTree()
         self.filemenu.entryconfig(index=self.filemenu.index("Open"),command=controller.FileDialog)
+        self.filemenu.entryconfig(index=self.filemenu.index("Exit"),command=sys.exit)
               
     def Show(self) -> None:
         #self.PauseBtn.config(command=lambda: self.msgBox("aaa","bbb"))
