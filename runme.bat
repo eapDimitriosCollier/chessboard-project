@@ -1,0 +1,1 @@
+pyinstaller --onefile main.py --windowed --icon=chess.ico --distpath .  -n PgnViewer.exe
