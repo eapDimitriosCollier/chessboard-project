@@ -22,12 +22,3 @@ class RepeativeTimer(threading.Timer):
 def PrintMsg(str):
     print (str,"\n")
 
-# if __name__ == '__main__':
-#     RT=RepeativeTimer(1,PrintMsg,("this is a message",))
-#     RT.start()
-    
-#     for _ in range(10):
-#         print (RT.isActive)
-    
-#     RT.stop()
-#     print (RT.isActive)

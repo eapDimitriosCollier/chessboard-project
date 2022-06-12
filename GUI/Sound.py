@@ -46,15 +46,6 @@ class Sound:
             Event('WavInQueue').invoke()        
         
 
-# if __name__ == '__main__':
-#     for _ in range(1):
-#         thread=threading.Thread(target=Sound.PlayWAV,args=(CheckWAV,))
-#         thread.start()
-#         thread=threading.Thread(target=Sound.PlayWAV,args=(MoveWAV,))
-#         thread.start()
-#         thread=threading.Thread(target=Sound.PlayWAV,args=(PromoteWAV,))
-#         thread.start()
-        
 
     
 

@@ -1,5 +1,4 @@
 
-
 from tkinter import *
 from tkinter import ttk
 from GUI.ChessFormConstants import *
@@ -65,11 +64,8 @@ class DataGridView:
         print('From Datagrid view: TagsUpdated Event')
         print(self.model.tags)
         
-        # FileName  EMPTY
-        # BlackElo 2264
     
     def onRawMovesUpdated(self, event):
         print('From Datagrid view: RawMovesUpdated Event')
         print(self.model.rawMoves)
-        
-        # 1. e4 e6
+  

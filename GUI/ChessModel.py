@@ -75,9 +75,7 @@ class ChessModel():
     
     def onResponse(self, response: Response):
         if (isinstance(response, InterpreterResponse)):
-            # Θα ήταν ωραίο να παίζαμε με match-case αντί για if, αλλά για backwards compatibility
-            # ας το αφήσουμε καλύτερα...
-        
+
             if (response._request._type == "GET_GAMES"):
                 self.GetGamesResponseHandler(response._response)
             elif (response._request._type == "GET_TAGS"):

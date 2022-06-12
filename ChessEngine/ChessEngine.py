@@ -1,6 +1,4 @@
 
-
-
 from ChessEngine.ChessPiece import King,Queen,Rook,Knight,Bishop,Pawn,COLOR,PIECENAME
 from ChessEngine.ChessPiece import Piece,BlackUnicodes,WhiteUnicodes
 
@@ -99,14 +97,6 @@ class Board:
                     if uniItem==WhiteUnicodes[5]:
                         self.Container.append(Pawn(Color=COLOR.WHITE,Row=row,Column=column))
 
-                    # for piece in self.Container:
-                    #     if isinstance(piece,Piece):
-                    #         if piece.Unicode==uniItem:
-                    #             color=piece.Color
-                    #             tag=piece.Tag
-                    #             if row!=piece.Position.Row or column!=piece.Position.Row:
-                    #                 piece.Position.Row=row
-                    #                 piece.Position.Column=column
                                 
 
     def MovePiece(self, Piece:str,Color:str, ToRow:int,ToCol:int,FromRow:int=None,FromCol:int=None, Capture:bool=False)-> None:
@@ -264,14 +254,3 @@ class ChessEvent:
 
 
 
-if __name__ == '__main__':
-    ChessBoard=Board()
-    #ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an event triggered method! {args},{kwargs}")
-    #ChessBoard.MovingEvent+= lambda *args,**kwargs:print(f"Τhis is an other event triggered method! {args},{kwargs}")
-    ChessBoard.MovingEvent+= ChessBoard.PrintBoard
-    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=3,FromRow=None,FromCol=None,Capture=False)
-    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=1,FromRow=None,FromCol=None,Capture=False)
-    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=2,FromRow=None,FromCol=None,Capture=False)
-    ChessBoard.PopState()
-    ChessBoard.PrintBoard()
-    ChessBoard.MovePiece("PAWN","WHITE",ToRow=4,ToCol=2,FromRow=None,FromCol=None,Capture=False)

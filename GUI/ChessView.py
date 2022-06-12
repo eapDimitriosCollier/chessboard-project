@@ -1,6 +1,3 @@
-from collections import deque
-
-
 from tkinter import *
 from tkinter import messagebox
 from GUI.ChessFormConstants import *
@@ -86,8 +83,7 @@ class ChessView:
         self.MoveNextBtn = Button(self.root,image=self.next_icon) 
         self.PlayBtn=Button(self.root,image=self.play_icon,state='normal')
         self.PauseBtn = Button(self.root,image=self.pause_icon)
-        #self.PauseBtn = self.canvas.create_window(800, 550, anchor='nw',window=Button(self.root,image=self.pause_icon))
-        
+           
 
         self.canvas.create_window(650, 550, anchor='nw', window=self.MovePreviousBtn)        
         self.canvas.create_window(700, 550, anchor='nw', window=self.MoveNextBtn)
@@ -103,9 +99,8 @@ class ChessView:
         self.filemenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=self.filemenu)
         self.filemenu.add_command(label="Open")
-        #filemenu.add_command(label="Close", command=self.DoNothing)
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit")#, command=quit)
+        self.filemenu.add_command(label="Exit")
 
         self.helpmenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=self.helpmenu)
